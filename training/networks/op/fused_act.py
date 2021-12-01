@@ -56,8 +56,8 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 class FusedLeakyReLUFunction(jt.Function):
     # @staticmethod
     def execute(self, input, bias, negative_slope, scale):
-        empty = input.new_empty(0)
-
+        # empty = input.new_empty(0)
+        empty = jt.empty(0)
         self.bias = bias is not None
 
         if bias is None:
