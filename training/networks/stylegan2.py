@@ -274,7 +274,8 @@ class NoiseInjection(jt.nn.Module):
     def execute(self, image, noise=None):
         if noise is None:
             batch, _, height, width = image.shape
-            noise = image.new_empty(batch, 1, height, width).normal_()
+            # noise = image.new_empty(batch, 1, height, width).normal_()
+            noise = jt.init.gauss((batch, 1, height, width))
 
         return image + self.weight * noise
 

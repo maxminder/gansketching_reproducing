@@ -4,6 +4,6 @@ import torch
 #import jittor as jt
 #from torch._C import device
 
-x = torch.randn((2,3,4,5))
-print(x.new_empty(0))
+x = torch.Tensor(([[1,2,3],[2,3,4]]))
+print(x.normal_())
 #print(x)
