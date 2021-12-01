@@ -13,7 +13,7 @@ class PixelNorm(jt.nn.Module):
         super().__init__()
 
     def execute(self, input):
-        return input / jt.sqrt(jt.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
+        return input / jt.sqrt(jt.mean(input ** 2, dim=1, keepdims=True) + 1e-8)
 
 
 def make_kernel(k):
