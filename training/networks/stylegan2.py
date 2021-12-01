@@ -468,7 +468,7 @@ class Generator(jt.nn.Module):
         latent_in = jt.randn(
             n_latent, self.style_dim
         )
-        latent = self.style(latent_in).mean(0, keepdim=True)
+        latent = self.style(latent_in).mean(0, keepdims=True)
 
         return latent
 
