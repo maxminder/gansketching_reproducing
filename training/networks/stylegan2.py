@@ -253,13 +253,13 @@ class ModulatedConv2d(jt.nn.Module):
             input = self.blur(input)
             _, _, height, width = input.shape
             input = input.view(1, batch * in_channel, height, width)
-            out = jt.nn.conv2d(input, weight, padding=0, stride=2)
+            out = jt.nn.conv2d(input, weight, padding=0, stride=2, groups=batch)
             _, _, height, width = out.shape
             out = out.view(batch, self.out_channel, height, width)
 
         else:
             input = input.view(1, batch * in_channel, height, width)
-            out = jt.nn.conv2d(input, weight, padding=self.padding)
+            out = jt.nn.conv2d(input, weight, padding=self.padding, groups=batch)
             _, _, height, width = out.shape
             out = out.view(batch, self.out_channel, height, width)
 
