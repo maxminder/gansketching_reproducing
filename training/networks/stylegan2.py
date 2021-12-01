@@ -12,7 +12,7 @@ class PixelNorm(jt.nn.Module):
     def __init__(self):
         super().__init__()
 
-    def forward(self, input):
+    def execute(self, input):
         return input * jt.rsqrt(jt.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
 
 
@@ -43,7 +43,7 @@ class Upsample(jt.nn.Module):
 
         self.pad = (pad0, pad1)
 
-    def forward(self, input):
+    def execute(self, input):
         out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
 
         return out
@@ -64,7 +64,7 @@ class Downsample(jt.nn.Module):
 
         self.pad = (pad0, pad1)
 
-    def forward(self, input):
+    def execute(self, input):
         out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
 
         return out
@@ -83,7 +83,7 @@ class Blur(jt.nn.Module):
         self._kernel = kernel
         self.pad = pad
 
-    def forward(self, input):
+    def execute(self, input):
         out = upfirdn2d(input, self.kernel, pad=self.pad)
 
         return out
@@ -109,7 +109,7 @@ class EqualConv2d(jt.nn.Module):
         else:
             self.bias = None
 
-    def forward(self, input):
+    def execute(self, input):
         out = jt.nn.conv2d(
             input,
             self.weight * self.scale,
@@ -146,7 +146,7 @@ class EqualLinear(jt.nn.Module):
         self.scale = (1 / math.sqrt(in_dim)) * lr_mul
         self.lr_mul = lr_mul
 
-    def forward(self, input):
+    def execute(self, input):
         if self.activation:
             # out = F.linear(input, self.weight * self.scale)
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
@@ -221,7 +221,7 @@ class ModulatedConv2d(jt.nn.Module):
             f"upsample={self.upsample}, downsample={self.downsample})"
         )
 
-    def forward(self, input, style):
+    def execute(self, input, style):
         batch, in_channel, height, width = input.shape
 
         style = self.modulation(style).view(batch, 1, in_channel, 1, 1)
@@ -271,7 +271,7 @@ class NoiseInjection(jt.nn.Module):
 
         self.weight = jt.nn.Parameter(jt.zeros(1))
 
-    def forward(self, image, noise=None):
+    def execute(self, image, noise=None):
         if noise is None:
             batch, _, height, width = image.shape
             noise = image.new_empty(batch, 1, height, width).normal_()
@@ -285,7 +285,7 @@ class ConstantInput(jt.nn.Module):
 
         self.input = jt.nn.Parameter(jt.randn(1, channel, size, size))
 
-    def forward(self, input):
+    def execute(self, input):
         batch = input.shape[0]
         out = self.input.repeat(batch, 1, 1, 1)
 
@@ -297,7 +297,7 @@ class WShift(jt.nn.Module):
         super().__init__()
         self.w_shift = jt.nn.Parameter(jt.zeros(1, style_dim))
 
-    def forward(self, input):
+    def execute(self, input):
         out = input + self.w_shift
         return out
 
@@ -330,7 +330,7 @@ class StyledConv(jt.nn.Module):
         # self.activate = ScaledLeakyReLU(0.2)
         self.activate = FusedLeakyReLU(out_channel)
 
-    def forward(self, input, style, noise=None):
+    def execute(self, input, style, noise=None):
         out = self.conv(input, style)
         out = self.noise(out, noise=noise)
         # out = out + self.bias
@@ -349,7 +349,7 @@ class ToRGB(jt.nn.Module):
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
         self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
 
-    def forward(self, input, style, skip=None):
+    def execute(self, input, style, skip=None):
         out = self.conv(input, style)
         out = out + self.bias
 
@@ -475,7 +475,7 @@ class Generator(jt.nn.Module):
     def get_latent(self, input):
         return self.style(input)
 
-    def forward(
+    def execute(
         self,
         styles,
         return_latents=False,
@@ -606,7 +606,7 @@ class ResBlock(jt.nn.Module):
             in_channel, out_channel, 1, downsample=True, activate=False, bias=False
         )
 
-    def forward(self, input):
+    def execute(self, input):
         out = self.conv1(input)
         out = self.conv2(out)
 
@@ -656,7 +656,7 @@ class Discriminator(jt.nn.Module):
             EqualLinear(channels[4], 1),
         )
 
-    def forward(self, input):
+    def execute(self, input):
         out = self.convs(input)
 
         batch, channel, height, width = out.shape
@@ -709,7 +709,7 @@ class PatchDiscriminator(jt.nn.Module):
         self.convs = jt.nn.Sequential(*convs)
         self.patch_conv = ConvLayer(in_channel, 1, 3)
 
-    def forward(self, input):
+    def execute(self, input):
         out = self.convs(input)
         out = self.patch_conv(out)
         return out
