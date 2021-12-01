@@ -466,7 +466,7 @@ class Generator(jt.nn.Module):
 
     def mean_latent(self, n_latent):
         latent_in = jt.randn(
-            n_latent, self.style_dim, device=self.input.input.device
+            n_latent, self.style_dim
         )
         latent = self.style(latent_in).mean(0, keepdim=True)
 
