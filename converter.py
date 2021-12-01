@@ -1,9 +1,11 @@
 #from jittor.utils.pytorch_converter import convert
 import numpy as np
-import torch
-#import jittor as jt
+#import torch
+import jittor as jt
 #from torch._C import device
-
-x = torch.Tensor(([[1,2,3],[2,3,4]]))
-print(x.normal_())
+jt.dirty_fix_pytorch_runtime_error()
+import torch
+a = torch.randn(2,3)
+b = jt.mean(a)
+print(b)
 #print(x)

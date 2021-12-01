@@ -5,7 +5,7 @@ import jittor as jt
 # from torch import nn
 # from torch.nn import functional as F
 
-from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
+from .op import FusedLeakyReLU, fused_leaky_relu
 
 
 class PixelNorm(jt.nn.Module):
@@ -27,66 +27,66 @@ def make_kernel(k):
     return k
 
 
-class Upsample(jt.nn.Module):
-    def __init__(self, kernel, factor=2):
-        super().__init__()
+# class Upsample(jt.nn.Module):
+#     def __init__(self, kernel, factor=2):
+#         super().__init__()
 
-        self.factor = factor
-        kernel = make_kernel(kernel) * (factor ** 2)
-        # self.register_buffer("kernel", kernel)
-        self._kernel = kernel
+#         self.factor = factor
+#         kernel = make_kernel(kernel) * (factor ** 2)
+#         # self.register_buffer("kernel", kernel)
+#         self._kernel = kernel
 
-        p = kernel.shape[0] - factor
+#         p = kernel.shape[0] - factor
 
-        pad0 = (p + 1) // 2 + factor - 1
-        pad1 = p // 2
+#         pad0 = (p + 1) // 2 + factor - 1
+#         pad1 = p // 2
 
-        self.pad = (pad0, pad1)
+#         self.pad = (pad0, pad1)
 
-    def execute(self, input):
-        out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
+#     def execute(self, input):
+#         out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
 
-        return out
-
-
-class Downsample(jt.nn.Module):
-    def __init__(self, kernel, factor=2):
-        super().__init__()
-
-        self.factor = factor
-        kernel = make_kernel(kernel)
-        self.register_buffer("kernel", kernel)
-
-        p = kernel.shape[0] - factor
-
-        pad0 = (p + 1) // 2
-        pad1 = p // 2
-
-        self.pad = (pad0, pad1)
-
-    def execute(self, input):
-        out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
-
-        return out
+#         return out
 
 
-class Blur(jt.nn.Module):
-    def __init__(self, kernel, pad, upsample_factor=1):
-        super().__init__()
+# class Downsample(jt.nn.Module):
+#     def __init__(self, kernel, factor=2):
+#         super().__init__()
 
-        kernel = make_kernel(kernel)
+#         self.factor = factor
+#         kernel = make_kernel(kernel)
+#         self.register_buffer("kernel", kernel)
 
-        if upsample_factor > 1:
-            kernel = kernel * (upsample_factor ** 2)
+#         p = kernel.shape[0] - factor
 
-        # self.register_buffer("kernel", kernel) 存疑
-        self._kernel = kernel
-        self.pad = pad
+#         pad0 = (p + 1) // 2
+#         pad1 = p // 2
 
-    def execute(self, input):
-        out = upfirdn2d(input, self.kernel, pad=self.pad)
+#         self.pad = (pad0, pad1)
 
-        return out
+#     def execute(self, input):
+#         out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
+
+#         return out
+
+
+# class Blur(jt.nn.Module):
+#     def __init__(self, kernel, pad, upsample_factor=1):
+#         super().__init__()
+
+#         kernel = make_kernel(kernel)
+
+#         if upsample_factor > 1:
+#             kernel = kernel * (upsample_factor ** 2)
+
+#         # self.register_buffer("kernel", kernel) 存疑
+#         self._kernel = kernel
+#         self.pad = pad
+
+#     def execute(self, input):
+#         out = upfirdn2d(input, self.kernel, pad=self.pad)
+
+#         return out
 
 
 class EqualConv2d(jt.nn.Module):
@@ -187,21 +187,21 @@ class ModulatedConv2d(jt.nn.Module):
         self.upsample = upsample
         self.downsample = downsample
 
-        if upsample:
-            factor = 2
-            p = (len(blur_kernel) - factor) - (kernel_size - 1)
-            pad0 = (p + 1) // 2 + factor - 1
-            pad1 = p // 2 + 1
+        # if upsample:
+        #     factor = 2
+        #     p = (len(blur_kernel) - factor) - (kernel_size - 1)
+        #     pad0 = (p + 1) // 2 + factor - 1
+        #     pad1 = p // 2 + 1
 
-            self.blur = Blur(blur_kernel, pad=(pad0, pad1), upsample_factor=factor)
+        #     self.blur = Blur(blur_kernel, pad=(pad0, pad1), upsample_factor=factor)
 
-        if downsample:
-            factor = 2
-            p = (len(blur_kernel) - factor) + (kernel_size - 1)
-            pad0 = (p + 1) // 2
-            pad1 = p // 2
+        # if downsample:
+        #     factor = 2
+        #     p = (len(blur_kernel) - factor) + (kernel_size - 1)
+        #     pad0 = (p + 1) // 2
+        #     pad1 = p // 2
 
-            self.blur = Blur(blur_kernel, pad=(pad0, pad1))
+        #     self.blur = Blur(blur_kernel, pad=(pad0, pad1))
 
         fan_in = in_channel * kernel_size ** 2
         self.scale = 1 / math.sqrt(fan_in)
@@ -346,8 +346,8 @@ class ToRGB(jt.nn.Module):
     def __init__(self, in_channel, style_dim, upsample=True, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
-        if upsample:
-            self.upsample = Upsample(blur_kernel)
+        # if upsample:
+        #     self.upsample = jt.nn.Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
         self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
@@ -356,10 +356,10 @@ class ToRGB(jt.nn.Module):
         out = self.conv(input, style)
         out = out + self.bias
 
-        if skip is not None:
-            skip = self.upsample(skip)
+        # if skip is not None:
+        #     skip = self.upsample(skip)
 
-            out = out + skip
+        #     out = out + skip
 
         return out
 
@@ -457,13 +457,13 @@ class Generator(jt.nn.Module):
         self.n_latent = self.log_size * 2 - 2
 
     def make_noise(self):
-        device = self.input.input.device
+        # device = self.input.input.device
 
-        noises = [jt.randn(1, 1, 2 ** 2, 2 ** 2, device=device)]
+        noises = [jt.randn(1, 1, 2 ** 2, 2 ** 2)]
 
         for i in range(3, self.log_size + 1):
             for _ in range(2):
-                noises.append(jt.randn(1, 1, 2 ** i, 2 ** i, device=device))
+                noises.append(jt.randn(1, 1, 2 ** i, 2 ** i))
 
         return noises
 
@@ -574,20 +574,20 @@ class ConvLayer(jt.nn.Sequential):
     ):
         layers = []
 
-        if downsample:
-            factor = 2
-            p = (len(blur_kernel) - factor) + (kernel_size - 1)
-            pad0 = (p + 1) // 2
-            pad1 = p // 2
+        # if False:
+        #     factor = 2
+        #     p = (len(blur_kernel) - factor) + (kernel_size - 1)
+        #     pad0 = (p + 1) // 2
+        #     pad1 = p // 2
 
-            layers.append(Blur(blur_kernel, pad=(pad0, pad1)))
+        #     layers.append(Blur(blur_kernel, pad=(pad0, pad1)))
 
-            stride = 2
-            self.padding = 0
+        #     stride = 2
+        #     self.padding = 0
 
-        else:
-            stride = 1
-            self.padding = kernel_size // 2
+        # else:
+        stride = 1
+        self.padding = kernel_size // 2
 
         layers.append(
             EqualConv2d(
