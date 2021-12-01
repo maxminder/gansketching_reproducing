@@ -52,7 +52,7 @@ def generate(args, netG, device, mean_latent):
         for start in range(0, args.samples, args.batch_size):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
-            sample_z = jt.randn(batch_sz, 512, device=device) + w_shift
+            sample_z = jt.randn(batch_sz, 512) + w_shift
 
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
