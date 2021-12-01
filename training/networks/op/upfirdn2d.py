@@ -3,12 +3,13 @@ import os
 # import torch
 # from torch.nn import functional as F
 # from torch.autograd import Function
-# from torch.utils.cpp_extension import load
+from torch.utils.cpp_extension import load
 import jittor as jt
+jt.dirty_fix_pytorch_runtime_error()
 
 
 module_path = os.path.dirname(__file__)
-upfirdn2d_op = jt.load(
+upfirdn2d_op = load(
     "upfirdn2d",
     sources=[
         os.path.join(module_path, "upfirdn2d.cpp"),

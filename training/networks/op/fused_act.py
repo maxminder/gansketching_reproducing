@@ -4,11 +4,11 @@ import os
 # from torch import nn
 # from torch.nn import functional as F
 # from torch.autograd import Function
-# from torch.utils.cpp_extension import load
+from torch.utils.cpp_extension import load
 import jittor as jt
 
 module_path = os.path.dirname(__file__)
-fused = jt.load(
+fused = load(
     "fused",
     sources=[
         os.path.join(module_path, "fused_bias_act.cpp"),
