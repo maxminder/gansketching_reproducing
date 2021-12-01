@@ -228,7 +228,7 @@ class ModulatedConv2d(jt.nn.Module):
         weight = self.scale * self.weight * style
 
         if self.demodulate:
-            demod = jt.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
+            demod = 1/jt.sqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
             weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
 
         weight = weight.view(
