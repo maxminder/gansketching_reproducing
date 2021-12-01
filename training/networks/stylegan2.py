@@ -131,10 +131,11 @@ class EqualLinear(jt.nn.Module):
         self, in_dim, out_dim, bias=True, bias_init=0, lr_mul=1, activation=None
     ):
         super().__init__()
-        self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim).div_(lr_mul))
+        self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
         if bias:
-            self.bias = jt.nn.Parameter(jt.zeros(out_dim).fill_(bias_init))
+            # self.bias = jt.nn.Parameter(jt.zeros(out_dim).fill_(bias_init))
+            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
 
         else:
             self.bias = None
