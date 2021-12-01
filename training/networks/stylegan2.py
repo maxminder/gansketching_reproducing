@@ -533,7 +533,7 @@ class Generator(jt.nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        print(self.convs[:])
+        print(self.convs[0:12])
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
