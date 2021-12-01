@@ -19,7 +19,7 @@ fused = load(
 
 class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
-    def forward(ctx, grad_output, out, bias, negative_slope, scale):
+    def execute(ctx, grad_output, out, bias, negative_slope, scale):
         ctx.save_for_backward(out)
         ctx.negative_slope = negative_slope
         ctx.scale = scale
@@ -55,7 +55,7 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
 class FusedLeakyReLUFunction(jt.Function):
     @staticmethod
-    def forward(ctx, input, bias, negative_slope, scale):
+    def execute(ctx, input, bias, negative_slope, scale):
         empty = input.new_empty(0)
 
         ctx.bias = bias is not None
@@ -97,7 +97,7 @@ class FusedLeakyReLU(jt.Module):
         self.negative_slope = negative_slope
         self.scale = scale
 
-    def forward(self, input):
+    def execute(self, input):
         return fused_leaky_relu(input, self.bias, self.negative_slope, self.scale)
 
 
