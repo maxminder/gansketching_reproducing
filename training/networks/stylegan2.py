@@ -414,9 +414,9 @@ class Generator(jt.nn.Module):
         self.log_size = int(math.log(size, 2))
         self.num_layers = (self.log_size - 2) * 2 + 1
 
-        self.convs = jt.nn.ModuleList()
-        self.upsamples = jt.nn.ModuleList()
-        self.to_rgbs = jt.nn.ModuleList()
+        self.convs = []#jt.nn.ModuleList()
+        self.upsamples = []#jt.nn.ModuleList()
+        self.to_rgbs = []#jt.nn.ModuleList()
         # self._noises = jt.nn.Module()
         self._noises = []
 
@@ -533,7 +533,6 @@ class Generator(jt.nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        print(self.convs[0:12])
         for conv1, conv2, noise1, noise2, to_rgb in zip(
             self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         ):
