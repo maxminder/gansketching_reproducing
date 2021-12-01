@@ -1,9 +1,10 @@
-import torch
-import torch.nn as nn
-from torch.nn import init
+# import torch
+# import torch.nn as nn
+# from torch.nn import init
 import functools
-from torch.autograd import Variable
-from torch.optim import lr_scheduler
+import jittor as jt
+# from torch.autograd import Variable
+# from torch.optim import lr_scheduler
 import numpy as np
 ###############################################################################
 # Functions
@@ -14,48 +15,48 @@ def weights_init_normal(m):
     classname = m.__class__.__name__
     # print(classname)
     if classname.find('Conv') != -1:
-        init.normal_(m.weight.data, 0.0, 0.02)
+        jt.init.gauss_(m.weight.data, 0.0, 0.02)
     elif classname.find('Linear') != -1:
-        init.normal_(m.weight.data, 0.0, 0.02)
+        jt.init.gauss_(m.weight.data, 0.0, 0.02)
     elif classname.find('BatchNorm2d') != -1:
-        init.normal_(m.weight.data, 1.0, 0.02)
-        init.constant_(m.bias.data, 0.0)
+        jt.init.gauss_(m.weight.data, 1.0, 0.02)
+        jt.init.constant_(m.bias.data, 0.0)
 
 
 def weights_init_xavier(m):
     classname = m.__class__.__name__
     # print(classname)
     if classname.find('Conv') != -1:
-        init.xavier_normal_(m.weight.data, gain=0.02)
+        jt.init.xavier_gauss_(m.weight.data, gain=0.02)
     elif classname.find('Linear') != -1:
-        init.xavier_normal_(m.weight.data, gain=0.02)
+        jt.init.xavier_gauss_(m.weight.data, gain=0.02)
     elif classname.find('BatchNorm2d') != -1:
-        init.normal_(m.weight.data, 1.0, 0.02)
-        init.constant_(m.bias.data, 0.0)
+        jt.init.gauss_(m.weight.data, 1.0, 0.02)
+        jt.init.constant_(m.bias.data, 0.0)
 
 
 def weights_init_kaiming(m):
     classname = m.__class__.__name__
     # print(classname)
     if classname.find('Conv') != -1:
-        init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+        jt.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
     elif classname.find('Linear') != -1:
-        init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
+        jt.init.kaiming_normal_(m.weight.data, a=0, mode='fan_in')
     elif classname.find('BatchNorm2d') != -1:
-        init.normal_(m.weight.data, 1.0, 0.02)
-        init.constant_(m.bias.data, 0.0)
+        jt.init.gauss_(m.weight.data, 1.0, 0.02)
+        jt.init.constant_(m.bias.data, 0.0)
 
 
 def weights_init_orthogonal(m):
     classname = m.__class__.__name__
     print(classname)
     if classname.find('Conv') != -1:
-        init.orthogonal_(m.weight.data, gain=1)
+        jt.init.relu_invariant_gauss_(m.weight.data, gain=1)  #存疑
     elif classname.find('Linear') != -1:
-        init.orthogonal_(m.weight.data, gain=1)
+        jt.init.relu_invariant_gauss_(m.weight.data, gain=1)  #存疑
     elif classname.find('BatchNorm2d') != -1:
-        init.normal_(m.weight.data, 1.0, 0.02)
-        init.constant_(m.bias.data, 0.0)
+        jt.init.gauss_(m.weight.data, 1.0, 0.02)
+        jt.init.constant_(m.bias.data, 0.0)
 
 
 def init_weights(net, init_type='normal'):
@@ -66,7 +67,7 @@ def init_weights(net, init_type='normal'):
         net.apply(weights_init_xavier)
     elif init_type == 'kaiming':
         net.apply(weights_init_kaiming)
-    elif init_type == 'orthogonal':
+    elif init_type == 'orthogonal':    #别选这个
         net.apply(weights_init_orthogonal)
     else:
         raise NotImplementedError('initialization method [%s] is not implemented' % init_type)
@@ -74,9 +75,9 @@ def init_weights(net, init_type='normal'):
 
 def get_norm_layer(norm_type='instance'):
     if norm_type == 'batch':
-        norm_layer = functools.partial(nn.BatchNorm2d, affine=True)
+        norm_layer = functools.partial(jt.nn.BatchNorm2d, affine=True)
     elif norm_type == 'instance':
-        norm_layer = functools.partial(nn.InstanceNorm2d, affine=False)
+        norm_layer = functools.partial(jt.nn.InstanceNorm2d, affine=False)
     elif norm_type == 'none':
         norm_layer = None
     else:
@@ -89,11 +90,12 @@ def get_scheduler(optimizer, opt):
         def lambda_rule(epoch):
             lr_l = 1.0 - max(0, epoch + 1 + opt.epoch_count - opt.niter) / float(opt.niter_decay + 1)
             return lr_l
-        scheduler = lr_scheduler.LambdaLR(optimizer, lr_lambda=lambda_rule)
+        scheduler = jt.optim.LambdaLR(optimizer, lr_lambda=lambda_rule)
+        return NotImplementedError('learning rate policy [%s] is not implemented', opt.lr_policy)
     elif opt.lr_policy == 'step':
-        scheduler = lr_scheduler.StepLR(optimizer, step_size=opt.lr_decay_iters, gamma=0.1)
+        scheduler = jt.lr_scheduler.StepLR(optimizer, step_size=opt.lr_decay_iters, gamma=0.1)
     elif opt.lr_policy == 'plateau':
-        scheduler = lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
+        scheduler = jt.lr_scheduler.ReduceLROnPlateau(optimizer, mode='min', factor=0.2, threshold=0.01, patience=5)
     else:
         return NotImplementedError('learning rate policy [%s] is not implemented', opt.lr_policy)
     return scheduler
@@ -157,7 +159,7 @@ def print_network(net):
 # When LSGAN is used, it is basically same as MSELoss,
 # but it abstracts away the need to create the target label tensor
 # that has the same size as the input
-class GANLoss(nn.Module):
+class GANLoss(jt.nn.Module):
     def __init__(self, use_lsgan=True, target_real_label=1.0, target_fake_label=0.0,
                  device='cpu'):
         super(GANLoss, self).__init__()
@@ -167,9 +169,9 @@ class GANLoss(nn.Module):
         self.real_label_var = None
         self.fake_label_var = None
         if use_lsgan:
-            self.loss = nn.MSELoss().to(device)
+            self.loss = jt.nn.MSELoss()#.to(device) 存疑
         else:
-            self.loss = nn.BCELoss().to(device)
+            self.loss = jt.nn.BCELoss()#.to(device) 存疑
 
     def get_target_tensor(self, input, target_is_real):
         target_tensor = None
@@ -177,13 +179,13 @@ class GANLoss(nn.Module):
             create_label = ((self.real_label_var is None) or
                             (self.real_label_var.numel() != input.numel()))
             if create_label:
-                self.real_label_var = torch.full(input.size(), self.real_label, requires_grad=False, device=self.device)
+                self.real_label_var = jt.full(input.size(), self.real_label, requires_grad=False, device=self.device)
             target_tensor = self.real_label_var
         else:
             create_label = ((self.fake_label_var is None) or
                             (self.fake_label_var.numel() != input.numel()))
             if create_label:
-                self.fake_label_var = torch.full(input.size(), self.fake_label, requires_grad=False, device=self.device)
+                self.fake_label_var = jt.full(input.size(), self.fake_label, requires_grad=False, device=self.device)
             target_tensor = self.fake_label_var
         return target_tensor
 
@@ -196,31 +198,31 @@ class GANLoss(nn.Module):
 # downsampling/upsampling operations.
 # Code and idea originally from Justin Johnson's architecture.
 # https://github.com/jcjohnson/fast-neural-style/
-class ResnetGenerator(nn.Module):
-    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=nn.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
+class ResnetGenerator(jt.nn.Module):
+    def __init__(self, input_nc, output_nc, ngf=64, norm_layer=jt.BatchNorm2d, use_dropout=False, n_blocks=6, padding_type='reflect'):
         assert(n_blocks >= 0)
         super(ResnetGenerator, self).__init__()
         self.input_nc = input_nc
         self.output_nc = output_nc
         self.ngf = ngf
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
 
-        model = [nn.ReflectionPad2d(3),
-                 nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0,
+        model = [jt.nn.ReflectionPad2d(3),
+                 jt.nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0,
                            bias=use_bias),
                  norm_layer(ngf),
-                 nn.ReLU(True)]
+                 jt.nn.ReLU(True)]
 
         n_downsampling = 2
         for i in range(n_downsampling):
             mult = 2**i
-            model += [nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
+            model += [jt.nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
                                 stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
-                      nn.ReLU(True)]
+                      jt.nn.ReLU(True)]
 
         mult = 2**n_downsampling
         for i in range(n_blocks):
@@ -228,24 +230,24 @@ class ResnetGenerator(nn.Module):
 
         for i in range(n_downsampling):
             mult = 2**(n_downsampling - i)
-            model += [nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
+            model += [jt.nn.ConvTranspose2d(ngf * mult, int(ngf * mult / 2),
                                          kernel_size=3, stride=2,
                                          padding=1, output_padding=1,
                                          bias=use_bias),
                       norm_layer(int(ngf * mult / 2)),
-                      nn.ReLU(True)]
-        model += [nn.ReflectionPad2d(3)]
-        model += [nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
-        model += [nn.Tanh()]
+                      jt.nn.ReLU(True)]
+        model += [jt.nn.ReflectionPad2d(3)]
+        model += [jt.nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
+        model += [jt.nn.Tanh()]
 
-        self.model = nn.Sequential(*model)
+        self.model = jt.nn.Sequential(*model)
 
     def forward(self, input):
         return self.model(input)
 
 
 # Define a resnet block
-class ResnetBlock(nn.Module):
+class ResnetBlock(jt.nn.Module):
     def __init__(self, dim, padding_type, norm_layer, use_dropout, use_bias):
         super(ResnetBlock, self).__init__()
         self.conv_block = self.build_conv_block(dim, padding_type, norm_layer, use_dropout, use_bias)
@@ -254,35 +256,35 @@ class ResnetBlock(nn.Module):
         conv_block = []
         p = 0
         if padding_type == 'reflect':
-            conv_block += [nn.ReflectionPad2d(1)]
+            conv_block += [jt.nn.ReflectionPad2d(1)]
         elif padding_type == 'replicate':
-            conv_block += [nn.ReplicationPad2d(1)]
+            conv_block += [jt.nn.ReplicationPad2d(1)]
         elif padding_type == 'zero':
             p = 1
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
 
-        conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
+        conv_block += [jt.nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
                        norm_layer(dim),
-                       nn.ReLU(True)]
+                       jt.nn.ReLU(True)]
         if use_dropout:
-            conv_block += [nn.Dropout(0.5)]
+            conv_block += [jt.nn.Dropout(0.5)]
         else:
-            conv_block += [nn.Dropout(0)]
+            conv_block += [jt.nn.Dropout(0)]
 
         p = 0
         if padding_type == 'reflect':
-            conv_block += [nn.ReflectionPad2d(1)]
+            conv_block += [jt.nn.ReflectionPad2d(1)]
         elif padding_type == 'replicate':
-            conv_block += [nn.ReplicationPad2d(1)]
+            conv_block += [jt.nn.ReplicationPad2d(1)]
         elif padding_type == 'zero':
             p = 1
         else:
             raise NotImplementedError('padding [%s] is not implemented' % padding_type)
-        conv_block += [nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
+        conv_block += [jt.nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
                        norm_layer(dim)]
 
-        return nn.Sequential(*conv_block)
+        return jt.nn.Sequential(*conv_block)
 
     def forward(self, x):
         out = x + self.conv_block(x)
@@ -292,9 +294,9 @@ class ResnetBlock(nn.Module):
 # |num_downs|: number of downsamplings in UNet. For example,
 # if |num_downs| == 7, image of size 128x128 will become of size 1x1
 # at the bottleneck
-class UnetGenerator(nn.Module):
+class UnetGenerator(jt.nn.Module):
     def __init__(self, input_nc, output_nc, num_downs, ngf=64,
-                 norm_layer=nn.BatchNorm2d, use_dropout=False):
+                 norm_layer=jt.nn.BatchNorm2d, use_dropout=False):
         super(UnetGenerator, self).__init__()
 
         # construct unet structure
@@ -315,74 +317,74 @@ class UnetGenerator(nn.Module):
 # Defines the submodule with skip connection.
 # X -------------------identity---------------------- X
 #   |-- downsampling -- |submodule| -- upsampling --|
-class UnetSkipConnectionBlock(nn.Module):
+class UnetSkipConnectionBlock(jt.nn.Module):
     def __init__(self, outer_nc, inner_nc, input_nc=None,
-                 submodule=None, outermost=False, innermost=False, norm_layer=nn.BatchNorm2d, use_dropout=False):
+                 submodule=None, outermost=False, innermost=False, norm_layer=jt.nn.BatchNorm2d, use_dropout=False):
         super(UnetSkipConnectionBlock, self).__init__()
         self.outermost = outermost
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
         if input_nc is None:
             input_nc = outer_nc
-        downconv = nn.Conv2d(input_nc, inner_nc, kernel_size=4,
+        downconv = jt.nn.Conv2d(input_nc, inner_nc, kernel_size=4,
                              stride=2, padding=1, bias=use_bias)
-        downrelu = nn.LeakyReLU(0.2, True)
+        downrelu = jt.nn.LeakyReLU(0.2, True)
         downnorm = norm_layer(inner_nc)
-        uprelu = nn.ReLU(True)
+        uprelu = jt.nn.ReLU(True)
         upnorm = norm_layer(outer_nc)
 
         if outermost:
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+            upconv = jt.nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1)
             down = [downconv]
-            up = [uprelu, upconv, nn.Tanh()]
+            up = [uprelu, upconv, jt.nn.Tanh()]
             model = down + [submodule] + up
         elif innermost:
-            upconv = nn.ConvTranspose2d(inner_nc, outer_nc,
+            upconv = jt.nn.ConvTranspose2d(inner_nc, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1, bias=use_bias)
             down = [downrelu, downconv]
             up = [uprelu, upconv, upnorm]
             model = down + up
         else:
-            upconv = nn.ConvTranspose2d(inner_nc * 2, outer_nc,
+            upconv = jt.nn.ConvTranspose2d(inner_nc * 2, outer_nc,
                                         kernel_size=4, stride=2,
                                         padding=1, bias=use_bias)
             down = [downrelu, downconv, downnorm]
             up = [uprelu, upconv, upnorm]
 
             if use_dropout:
-                model = down + [submodule] + up + [nn.Dropout(0.5)]
+                model = down + [submodule] + up + [jt.nn.Dropout(0.5)]
             else:
                 model = down + [submodule] + up
 
-        self.model = nn.Sequential(*model)
+        self.model = jt.nn.Sequential(*model)
 
     def forward(self, x):
         if self.outermost:
             return self.model(x)
         else:
-            return torch.cat([x, self.model(x)], 1)
+            return jt.concat([x, self.model(x)], 1)  #存疑
 
 
 # Defines the PatchGAN discriminator with the specified arguments.
-class NLayerDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False):
+class NLayerDiscriminator(jt.nn.Module):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=jt.nn.BatchNorm2d, use_sigmoid=False):
         super(NLayerDiscriminator, self).__init__()
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
 
         # 256
         kw = 4
         padw = 1
         sequence = [
-            nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
+            jt.nn.LeakyReLU(0.2, True)
         ]
 
         # 128
@@ -393,10 +395,10 @@ class NLayerDiscriminator(nn.Module):
             nf_mult_prev = nf_mult
             nf_mult = min(2**n, 8)
             sequence += [
-                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+                jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw, stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2, True)
             ]
         # 64
         # 32
@@ -404,39 +406,39 @@ class NLayerDiscriminator(nn.Module):
         nf_mult_prev = nf_mult
         nf_mult = min(2**n_layers, 8)
         sequence += [
-            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+            jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=kw, stride=1, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2, True)
         ]
         # 31
 
-        sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
+        sequence += [jt.nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=1, padding=padw)]
         # 30
 
         if use_sigmoid:
-            sequence += [nn.Sigmoid()]
+            sequence += [jt.nn.Sigmoid()]
 
-        self.model = nn.Sequential(*sequence)
+        self.model = jt.nn.Sequential(*sequence)
 
     def forward(self, input):
         return self.model(input)
 
-class GlobalDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False):
+class GlobalDiscriminator(jt.nn.Module):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=jt.nn.BatchNorm2d, use_sigmoid=False):
         super(GlobalDiscriminator, self).__init__()
 
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
 
         # 256
         kw = 4
         padw = 1
         sequence = [
-            nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
+            jt.nn.LeakyReLU(0.2, True)
         ]
 
         # 128
@@ -446,10 +448,10 @@ class GlobalDiscriminator(nn.Module):
             nf_mult_prev = nf_mult
             nf_mult = min(2**n, 8)
             sequence += [
-                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+                jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw, stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2, True)
             ]
         # 64
         # 32
@@ -457,40 +459,40 @@ class GlobalDiscriminator(nn.Module):
         nf_mult_prev = nf_mult
         nf_mult = min(2**n_layers, 8)
         sequence += [
-            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+            jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=kw, stride=2, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2, True)
         ]
         # 16
 
-        sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=2, padding=0)]
-        sequence += [nn.Conv2d(1, 1, kernel_size=7, stride=1, padding=0)]
+        sequence += [jt.nn.Conv2d(ndf * nf_mult, 1, kernel_size=kw, stride=2, padding=0)]
+        sequence += [jt.nn.Conv2d(1, 1, kernel_size=7, stride=1, padding=0)]
 
         if use_sigmoid:
-            sequence += [nn.Sigmoid()]
+            sequence += [jt.nn.Sigmoid()]
 
-        self.model = nn.Sequential(*sequence)
+        self.model = jt.nn.Sequential(*sequence)
 
     def forward(self, input):
         return self.model(input)
 
-class GlobalNPDiscriminator(nn.Module):
+class GlobalNPDiscriminator(jt.nn.Module):
     # no padding
-    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=nn.BatchNorm2d, use_sigmoid=False):
+    def __init__(self, input_nc, ndf=64, n_layers=3, norm_layer=jt.nn.BatchNorm2d, use_sigmoid=False):
         super(GlobalNPDiscriminator, self).__init__()
 
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
 
         # 256
         kw = [8, 3, 4]
         padw = 0
         sequence = [
-            nn.Conv2d(input_nc, ndf, kernel_size=kw[0], stride=2, padding=padw),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.Conv2d(input_nc, ndf, kernel_size=kw[0], stride=2, padding=padw),
+            jt.nn.LeakyReLU(0.2, True)
         ]
         # 125
         nf_mult = 1
@@ -499,10 +501,10 @@ class GlobalNPDiscriminator(nn.Module):
             nf_mult_prev = nf_mult
             nf_mult = min(2**n, 8)
             sequence += [
-                nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+                jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw[n], stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2, True)
             ]
         # 62
         # 30
@@ -510,47 +512,47 @@ class GlobalNPDiscriminator(nn.Module):
         nf_mult_prev = nf_mult
         nf_mult = min(2**n_layers, 8)
         sequence += [
-            nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
+            jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=4, stride=2, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2, True)
         ]
         # 14
 
-        sequence += [nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=2, padding=0)]
+        sequence += [jt.nn.Conv2d(ndf * nf_mult, 1, kernel_size=4, stride=2, padding=0)]
         # 6
-        sequence += [nn.Conv2d(1, 1, kernel_size=6, stride=1, padding=0, bias=use_bias)]
+        sequence += [jt.nn.Conv2d(1, 1, kernel_size=6, stride=1, padding=0, bias=use_bias)]
         # 1
 
         if use_sigmoid:
-            sequence += [nn.Sigmoid()]
+            sequence += [jt.nn.Sigmoid()]
 
-        self.model = nn.Sequential(*sequence)
+        self.model = jt.nn.Sequential(*sequence)
 
     def forward(self, input):
         return self.model(input)
 
-class PixelDiscriminator(nn.Module):
-    def __init__(self, input_nc, ndf=64, norm_layer=nn.BatchNorm2d, use_sigmoid=False):
+class PixelDiscriminator(jt.nn.Module):
+    def __init__(self, input_nc, ndf=64, norm_layer=jt.nn.BatchNorm2d, use_sigmoid=False):
         super(PixelDiscriminator, self).__init__()
 
         if type(norm_layer) == functools.partial:
-            use_bias = norm_layer.func == nn.InstanceNorm2d
+            use_bias = norm_layer.func == jt.nn.InstanceNorm2d
         else:
-            use_bias = norm_layer == nn.InstanceNorm2d
+            use_bias = norm_layer == jt.nn.InstanceNorm2d
 
         self.net = [
-            nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0),
-            nn.LeakyReLU(0.2, True),
-            nn.Conv2d(ndf, ndf * 2, kernel_size=1, stride=1, padding=0, bias=use_bias),
+            jt.nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0),
+            jt.nn.LeakyReLU(0.2, True),
+            jt.nn.Conv2d(ndf, ndf * 2, kernel_size=1, stride=1, padding=0, bias=use_bias),
             norm_layer(ndf * 2),
-            nn.LeakyReLU(0.2, True),
-            nn.Conv2d(ndf * 2, 1, kernel_size=1, stride=1, padding=0, bias=use_bias)]
+            jt.nn.LeakyReLU(0.2, True),
+            jt.nn.Conv2d(ndf * 2, 1, kernel_size=1, stride=1, padding=0, bias=use_bias)]
 
         if use_sigmoid:
-            self.net.append(nn.Sigmoid())
+            self.net.append(jt.nn.Sigmoid())
 
-        self.net = nn.Sequential(*self.net)
+        self.net = jt.nn.Sequential(*self.net)
 
     def forward(self, input):
         return self.net(input)

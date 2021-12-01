@@ -1,19 +1,21 @@
 import os
 import random
-import torch
-
+#import torch
+import jittor as jt
 from training import networks
 
 
-class GANModel(torch.nn.Module):
+class GANModel(jt.nn.Module):
     def __init__(self, opt):
         super().__init__()
         self.opt = opt
         self.device = 'cuda' if not self.opt.use_cpu else 'cpu'
-        self.FloatTensor = torch.cuda.FloatTensor if self.use_gpu() \
-            else torch.FloatTensor
-        self.ByteTensor = torch.cuda.ByteTensor if self.use_gpu() \
-            else torch.ByteTensor
+        # self.FloatTensor = torch.cuda.FloatTensor if self.use_gpu() \
+        #     else torch.FloatTensor
+        self.FloatTensor = jt.float32
+        # self.ByteTensor = torch.cuda.ByteTensor if self.use_gpu() \
+        #     else torch.ByteTensor
+        self.ByteTensor = jt.int8
 
         self.netG, self.netD = self.initialize_networks(opt)
 
@@ -68,8 +70,8 @@ class GANModel(torch.nn.Module):
         G_beta2, D_beta2 = beta2, beta2 ** d_reg_ratio
 
         # create optimizers based on the selected parameters
-        optimizer_G = torch.optim.Adam(G_params, lr=G_lr, betas=(G_beta1, G_beta2))
-        optimizer_D = torch.optim.Adam(D_params, lr=D_lr, betas=(D_beta1, D_beta2))
+        optimizer_G = jt.optim.Adam(G_params, lr=G_lr, betas=(G_beta1, G_beta2))
+        optimizer_D = jt.optim.Adam(D_params, lr=D_lr, betas=(D_beta1, D_beta2))
 
         return optimizer_G, optimizer_D
 
@@ -86,7 +88,7 @@ class GANModel(torch.nn.Module):
         if d_requires_grad is not None:
             networks.set_requires_grad(self.D_params, d_requires_grad)
 
-    @torch.no_grad()
+    @jt.no_grad()
     def inference(self, noise, trunc_psi=1.0, mean_latent=None, with_tf=False):
         # If mean_latent is None, make one
         if trunc_psi < 1 and mean_latent is None:
@@ -99,7 +101,7 @@ class GANModel(torch.nn.Module):
             return img, self.tf_fake(img, apply_aug=False)
         return img
 
-    @torch.no_grad()
+    @jt.no_grad()
     def get_mean_latent(self, n_samples=8192):
         return self.netG.mean_latent(n_samples)
 
@@ -116,20 +118,20 @@ class GANModel(torch.nn.Module):
 
     def save(self, iters):
         save_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        torch.save(self.netG.state_dict(), save_path + "G.pth")
-        torch.save(self.netD_sketch.state_dict(), save_path + "D_sketch.pth")
+        jt.save(self.netG.state_dict(), save_path + "G.pth")
+        jt.save(self.netD_sketch.state_dict(), save_path + "D_sketch.pth")
         if self.opt.l_image > 0:
-            torch.save(self.netD_image.state_dict(), save_path + "D_image.pth")
+            jt.save(self.netD_image.state_dict(), save_path + "D_image.pth")
 
     def load(self, iters):
         load_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        state_dict_g = torch.load(load_path + "G.pth", map_location=self.device)
+        state_dict_g = jt.load(load_path + "G.pth", map_location=self.device)
         self.netG.load_state_dict(state_dict_g)
 
-        state_dict_d_sketch = torch.load(load_path + "D_sketch.pth", map_location=self.device)
+        state_dict_d_sketch = jt.load(load_path + "D_sketch.pth", map_location=self.device)
         self.netD_sketch.load_state_dict(state_dict_d_sketch)
         if self.opt.l_image > 0:
-            state_dict_d_image = torch.load(load_path + "D_image.pth", map_location=self.device)
+            state_dict_d_image = jt.load(load_path + "D_image.pth", map_location=self.device)
             self.netD_image.load_state_dict(state_dict_d_image)
 
     ############################################################################
@@ -141,12 +143,12 @@ class GANModel(torch.nn.Module):
         netD_sketch = networks.define_D(opt) if opt.isTrain else None
 
         if opt.g_pretrained != '':
-            weights = torch.load(opt.g_pretrained, map_location=lambda storage, loc: storage)
+            weights = jt.load(opt.g_pretrained, map_location=lambda storage, loc: storage)
             netG.load_state_dict(weights, strict=False)
 
         if netD_sketch is not None and opt.d_pretrained != '' and not opt.dsketch_no_pretrain:
             print("Using pretrained weight for D1...")
-            weights = torch.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
+            weights = jt.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
             netD_sketch.load_state_dict(weights)
 
         if opt.l_image > 0:
@@ -154,7 +156,7 @@ class GANModel(torch.nn.Module):
             netD_image = networks.define_D(opt)
             if opt.d_pretrained != '':
                 print("Using pretrained weight for D_image...")
-                weights = torch.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
+                weights = jt.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
                 netD_image.load_state_dict(weights)
             netD = [netD_sketch, netD_image]
         else:
@@ -205,7 +207,7 @@ class GANModel(torch.nn.Module):
 
     def compute_discriminator_loss(self, real_sketch, real_image):
         D_losses = {}
-        with torch.no_grad():
+        with jt.no_grad():
             fake_image = self.generate_fake()
             fake_image = fake_image.detach()
 
@@ -278,9 +280,11 @@ class GANModel(torch.nn.Module):
 def mixing_noise(batch, latent_dim, prob, device):
     """Generate 1 or 2 set of noises for style mixing."""
     if prob > 0 and random.random() < prob:
-        return torch.randn(2, batch, latent_dim, device=device).unbind(0)
+        #return jt.randn(2, batch, latent_dim, device=device).unbind(0)
+        return jt.randn(2, batch, latent_dim).unbind(0)
     else:
-        return [torch.randn(batch, latent_dim, device=device)]
+        #return [jt.randn(batch, latent_dim, device=device)]
+        return [jt.randn(batch, latent_dim)]
 
 
 def get_param_by_name(net, tgt_param):

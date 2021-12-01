@@ -1,8 +1,8 @@
 import os
 import numpy as np
-import torch
-import torchvision.utils
-
+#import torch
+#import torchvision.utils
+import jittor as jt
 from .gan_model import GANModel
 
 
@@ -95,11 +95,11 @@ class GANTrainer():
         sample_trunc = self.gan_model.inference(self.sample_z, trunc_psi=0.5)
         interp_trunc = self.gan_model.inference(self.interp_z, trunc_psi=0.5)
 
-        visuals['sample'] = torchvision.utils.make_grid(sample, nrow=8)
-        visuals['sample_transf'] = torchvision.utils.make_grid(transf, nrow=8)
-        visuals['interp'] = torchvision.utils.make_grid(interp, nrow=8)
-        visuals['sample_psi0.5'] = torchvision.utils.make_grid(sample_trunc, nrow=8)
-        visuals['interp_psi0.5'] = torchvision.utils.make_grid(interp_trunc, nrow=8)
+        visuals['sample'] =jt.misc.make_grid(sample, nrow=8)
+        visuals['sample_transf'] = jt.misc.make_grid(transf, nrow=8)
+        visuals['interp'] = jt.misc.make_grid(interp, nrow=8)
+        visuals['sample_psi0.5'] = jt.misc.make_grid(sample_trunc, nrow=8)
+        visuals['interp_psi0.5'] = jt.misc.make_grid(interp_trunc, nrow=8)
         update_dict(visuals, self.interm_imgs)
         return visuals
 
@@ -115,13 +115,13 @@ class GANTrainer():
             "opt": self.opt,
         }
         save_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        torch.save(misc, save_path + "misc.pth")
+        jt.save(misc, save_path + "misc.pth")
 
     def load(self, iters):
         print(f"Resuming model at iteration {iters}")
         self.gan_model.load(iters)
         load_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        state_dict = torch.load(load_path + "misc.pth", map_location=self.device)
+        state_dict = jt.load(load_path + "misc.pth", map_location=self.device)
         self.optimizer_G.load_state_dict(state_dict["g_optim"])
         self.optimizer_D.load_state_dict(state_dict["d_optim"])
 
@@ -135,32 +135,32 @@ class GANTrainer():
             interp_z_file = './cache_files/interp_z.pth'
 
         if os.path.exists(sample_z_file):
-            self.sample_z = torch.load(sample_z_file).to(device)
+            self.sample_z = jt.load(sample_z_file).to(device)
         else:
             if self.opt.reduce_visuals:
-                z = torch.randn(8, 512)
+                z = jt.randn(8, 512)
             else:
-                z = torch.randn(32, 512)
+                z = jt.randn(32, 512)
 
-            torch.save(z, sample_z_file)
+            jt.save(z, sample_z_file)
             self.sample_z = z.to(device)
 
         if os.path.exists(interp_z_file):
-            self.interp_z = torch.load(interp_z_file).to(device)
+            self.interp_z = jt.load(interp_z_file).to(device)
         else:
-            with torch.no_grad():
+            with jt.no_grad():
                 if self.opt.reduce_visuals:
-                    z0 = torch.randn(1, 1, 512)
-                    z1 = torch.randn(1, 1, 512)
+                    z0 = jt.randn(1, 1, 512)
+                    z1 = jt.randn(1, 1, 512)
                 else:
-                    z0 = torch.randn(4, 1, 512)
-                    z1 = torch.randn(4, 1, 512)
+                    z0 = jt.randn(4, 1, 512)
+                    z1 = jt.randn(4, 1, 512)
 
                 z = []
                 for c in np.linspace(0, 1, 8):
                     z.append((1 - c) * z0 + c * z1)
-                z = torch.cat(z, 1).view(-1, 512)
-            torch.save(z, interp_z_file)
+                z = jt.concat(z, 1).view(-1, 512)    #存疑
+            jt.save(z, interp_z_file)
             self.interp_z = z.to(device)
 
 

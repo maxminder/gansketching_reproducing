@@ -1,11 +1,12 @@
-import torch
-from torch import nn, autograd
-from torch.nn import functional as F
+# import torch
+# from torch import nn, autograd
+# from torch.nn import functional as F
+import jittor as jt
 
 
-class GANLoss(nn.Module):
+class GANLoss(jt.nn.Module):
     def __init__(self, gan_mode, target_real_label=1.0, target_fake_label=0.0,
-                 tensor=torch.FloatTensor, opt=None):
+                 tensor=jt.float32, opt=None):
         super(GANLoss, self).__init__()
         self.real_label = target_real_label
         self.fake_label = target_fake_label
@@ -40,35 +41,35 @@ class GANLoss(nn.Module):
     def loss(self, input, target_is_real, for_discriminator=True):
         if self.gan_mode == 'original':  # cross entropy loss
             target_tensor = self.get_target_tensor(input, target_is_real)
-            loss = F.binary_cross_entropy_with_logits(input, target_tensor)
+            loss = jt.nn.binary_cross_entropy_with_logits(input, target_tensor)
             return loss
 
         elif self.gan_mode == 'ls':
             target_tensor = self.get_target_tensor(input, target_is_real)
-            return F.mse_loss(input, target_tensor)
+            return jt.nn.mse_loss(input, target_tensor)
 
         elif self.gan_mode == 'hinge':
             if for_discriminator:
                 if target_is_real:
-                    minval = torch.min(input - 1, self.get_zero_tensor(input))
-                    loss = -torch.mean(minval)
+                    minval = jt.min(input - 1, self.get_zero_tensor(input))
+                    loss = -jt.mean(minval)
                 else:
-                    minval = torch.min(-input - 1, self.get_zero_tensor(input))
-                    loss = -torch.mean(minval)
+                    minval = jt.min(-input - 1, self.get_zero_tensor(input))
+                    loss = -jt.mean(minval)
             else:
                 assert target_is_real, "The generator's hinge loss must be aiming for real"
-                loss = -torch.mean(input)
+                loss = -jt.mean(input)
             return loss
 
         elif self.gan_mode == 'softplus':
             if for_discriminator:
                 if target_is_real:
-                    loss = F.softplus(-input).mean()
+                    loss = jt.nn.softplus(-input).mean()
                 else:
-                    loss = F.softplus(input).mean()
+                    loss = jt.nn.softplus(input).mean()
             else:
                 assert target_is_real, "The generator's hinge loss must be aiming for real"
-                loss = F.softplus(-input).mean()
+                loss = jt.nn.softplus(-input).mean()
             return loss
 
         else:
@@ -88,30 +89,33 @@ class GANLoss(nn.Module):
                     pred_i = pred_i[-1]
                 loss_tensor = self.loss(pred_i, target_is_real, for_discriminator)
                 bs = 1 if len(loss_tensor.size()) == 0 else loss_tensor.size(0)
-                new_loss = torch.mean(loss_tensor.view(bs, -1), dim=1)
+                new_loss = jt.mean(loss_tensor.view(bs, -1), dim=1)
                 loss += new_loss
             return loss / len(input)
         else:
             return self.loss(input, target_is_real, for_discriminator)
 
 
-class RegularizeD(nn.Module):
+class RegularizeD(jt.nn.Module):
     def forward(self, real_pred, real_img):
         # in case of patchGAN, take average of per-pixel predictions, and sum over batches
         outputs = real_pred.reshape(real_pred.shape[0], -1).mean(1).sum()
-        grad_real, = autograd.grad(
+        grad_real, = jt.grad(
             outputs=outputs, inputs=real_img, create_graph=True
-        )
+        )   #存疑
+        # grad_real, = autograd.grad(
+        #     outputs=outputs, inputs=real_img, create_graph=True
+        # )
         grad_penalty = grad_real.pow(2).reshape(grad_real.shape[0], -1).sum(1).mean()
 
         return grad_penalty
 
 
-class WeightLoss(nn.Module):
+class WeightLoss(jt.nn.Module):
     def __init__(self, params):
         super(WeightLoss, self).__init__()
         self.ref_weights = [
-            torch.tensor(p, requires_grad=False, device=p.device) for p in params
+            jt.float32(p, requires_grad=False, device=p.device) for p in params
         ]
 
     def forward(self, params):

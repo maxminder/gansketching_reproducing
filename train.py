@@ -1,7 +1,8 @@
 import time
-import torch
-import torch.multiprocessing as mp
-
+#import torch
+#import torch.multiprocessing as mp
+import multiprocessing as mp
+import jittor as jt
 from options import get_opt, print_options
 from eval import Evaluator
 from util.visualizer import Visualizer
@@ -10,14 +11,14 @@ from training.dataset import create_dataloader, yield_data
 
 
 def training_loop():
-    torch.backends.cudnn.benchmark = True
+    #jt.backends.cudnn.benchmark = True
 
     opt, parser = get_opt()
     opt.isTrain = True
 
     # needs to switch to spawn mode to be compatible with evaluation
     if not opt.disable_eval:
-        mp.set_start_method('spawn')
+        mp.set_start_method('spawn')    #存疑
 
     # dataloader for user sketches
     dataloader_sketch, sampler_sketch = create_dataloader(opt.dataroot_sketch,

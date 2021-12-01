@@ -4,17 +4,18 @@ from collections import OrderedDict
 
 import numpy as np
 import pandas as pd
-import torch
-import torch.multiprocessing as mp
-from torchvision import utils
+#import torch
+import jittor as jt
+import multiprocessing as mp
+#from torchvision import utils
 from cleanfid import fid
 
 from eval.ppl import compute_ppl
 from training.networks.stylegan2 import Generator
 
 
-def save_image_pytorch(img, name):
-    utils.save_image(
+def save_image_jittor(img, name):
+    jt.misc.save_image(
         img,
         name,
         nrow=1,
@@ -36,15 +37,16 @@ def make_eval_images(g, save_folder, eval_samples, batch_size, device, to_cpu=Tr
     for i in range(iterations):
         batch = min(batch_size, images_left)
         images_left -= batch_size
-        noise = torch.randn(batch, 512, device=device)
+        noise = jt.randn(batch, 512, device=device)
         sample, _ = g([noise])
 
         for ind in range(sample.size(0)):
-            save_image_pytorch(sample[ind], f'{save_folder}/image/{str(img_count).zfill(6)}.png')
+            save_image_jittor(sample[ind], f'{save_folder}/image/{str(img_count).zfill(6)}.png')
             img_count += 1
 
     if to_cpu:
-        g.to('cpu')
+        #g.to('cpu')    不知道怎么做
+        pass
 
 
 def get_metrics(opt, name, target):
@@ -60,7 +62,7 @@ def get_metrics(opt, name, target):
 
     ppl_wend = compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', crop=False, batch_size=25, device='cuda')
     del g
-    torch.cuda.empty_cache()
+    #torch.cuda.empty_cache()
 
     fake_feats, real_feats = stats_fake['vgg_features'], stats_real['vgg_features']
     with mp.Pool(1) as p:
@@ -83,7 +85,7 @@ def get_stats(opt, g, folder):
     if not file_cached:
         make_eval_images(g, folder, opt.eval_samples, opt.batch_size, opt.device)
 
-    torch.cuda.empty_cache()
+    #torch.cuda.empty_cache()
     vgg_features = get_vgg_features(folder, opt.eval_samples, opt.batch_size)
     return {
         "vgg_features": vgg_features
@@ -125,7 +127,7 @@ def run_precision_recall(real_feats, fake_feats):
 
 def setup_generator(ckpt_path, w_shift=False):
     g = Generator(256, 512, 8, w_shift=w_shift)
-    ckpt = torch.load(ckpt_path, map_location='cpu')
+    ckpt = jt.load(ckpt_path, map_location='cpu')
     g.load_state_dict(ckpt)
     g.eval()
     return g
@@ -147,14 +149,15 @@ if __name__ == '__main__':
         lst = [s.strip().split(' ') for s in f.readlines()]
         all_models, all_targets = zip(*lst)
 
-    torch.set_grad_enabled(False)
-    mp.set_start_method('spawn')
+    #torch.set_grad_enabled(False)
+    with jt.no_grad():
+        mp.set_start_method('spawn')
 
-    metrics = OrderedDict()
-    for name, target in zip(all_models, all_targets):
-        metrics[name] = get_metrics(opt, name, target)
-        print(f"({name}) {metrics[name]}")
+        metrics = OrderedDict()
+        for name, target in zip(all_models, all_targets):
+            metrics[name] = get_metrics(opt, name, target)
+            print(f"({name}) {metrics[name]}")
 
-        table_columns = ['fid', 'ppl', 'precision', 'recall']
-        table = pd.DataFrame.from_dict(metrics, orient='index', columns=table_columns)
-        table.to_csv(opt.output, na_rep='--')
+            table_columns = ['fid', 'ppl', 'precision', 'recall']
+            table = pd.DataFrame.from_dict(metrics, orient='index', columns=table_columns)
+            table.to_csv(opt.output, na_rep='--')

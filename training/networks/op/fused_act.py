@@ -1,14 +1,14 @@
 import os
 
-import torch
-from torch import nn
-from torch.nn import functional as F
-from torch.autograd import Function
-from torch.utils.cpp_extension import load
-
+# import torch
+# from torch import nn
+# from torch.nn import functional as F
+# from torch.autograd import Function
+# from torch.utils.cpp_extension import load
+import jittor as jt
 
 module_path = os.path.dirname(__file__)
-fused = load(
+fused = jt.load(
     "fused",
     sources=[
         os.path.join(module_path, "fused_bias_act.cpp"),
@@ -17,7 +17,7 @@ fused = load(
 )
 
 
-class FusedLeakyReLUFunctionBackward(Function):
+class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
     def forward(ctx, grad_output, out, bias, negative_slope, scale):
         ctx.save_for_backward(out)
@@ -53,7 +53,7 @@ class FusedLeakyReLUFunctionBackward(Function):
         return gradgrad_out, None, None, None, None
 
 
-class FusedLeakyReLUFunction(Function):
+class FusedLeakyReLUFunction(jt.Function):
     @staticmethod
     def forward(ctx, input, bias, negative_slope, scale):
         empty = input.new_empty(0)
@@ -84,12 +84,12 @@ class FusedLeakyReLUFunction(Function):
         return grad_input, grad_bias, None, None
 
 
-class FusedLeakyReLU(nn.Module):
+class FusedLeakyReLU(jt.Module):
     def __init__(self, channel, bias=True, negative_slope=0.2, scale=2 ** 0.5):
         super().__init__()
 
         if bias:
-            self.bias = nn.Parameter(torch.zeros(channel))
+            self.bias = jt.nn.Parameter(jt.zeros(channel))
 
         else:
             self.bias = None
@@ -105,10 +105,10 @@ def fused_leaky_relu(input, bias=None, negative_slope=0.2, scale=2 ** 0.5):
     if input.device.type == "cpu":
         if bias is not None:
             rest_dim = [1] * (input.ndim - bias.ndim - 1)
-            return F.leaky_relu(input + bias.view(1, bias.shape[0], *rest_dim), negative_slope=0.2) * scale
+            return jt.nn.leaky_relu(input + bias.view(1, bias.shape[0], *rest_dim), negative_slope=0.2) * scale
 
         else:
-            return F.leaky_relu(input, negative_slope=0.2) * scale
+            return jt.nn.leaky_relu(input, negative_slope=0.2) * scale
 
     else:
         return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)

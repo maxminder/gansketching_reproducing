@@ -1,8 +1,9 @@
 import os
 import numpy as np
+import jittor as jt
 from cleanfid import fid
-import torch
-import torch.multiprocessing as mp
+#import torch
+import multiprocessing as mp
 
 from run_metrics import get_vgg_features, make_eval_images
 
@@ -31,7 +32,7 @@ class Evaluator():
         cache_folder = f'cache_files/{self.opt.name}'
 
         print("Gathering images...")
-        with torch.no_grad():
+        with jt.no_grad():
             make_eval_images(self.gan_model.netG,
                              cache_folder,
                              2500,
@@ -39,7 +40,7 @@ class Evaluator():
                              self.device,
                              to_cpu=False)
 
-        torch.cuda.empty_cache()
+        #torch.cuda.empty_cache()
         with mp.Pool(1) as p:
             metrics = p.apply(metrics_process, (cache_folder, self.fid_stat, self.real_vgg,))
 
@@ -60,7 +61,7 @@ def metrics_process(cache_folder, fid_stats, vgg_feats):
     metrics = {}
     print("Evaluating FID...")
     metrics['fid'] = fid.compute_fid(cache_folder+'/image/', num_workers=0, dataset_name=fid_stats, dataset_split="custom")
-    torch.cuda.empty_cache()
+    #torch.cuda.empty_cache()
 
     print("Evaluating P&R...")
     from eval.precision_recall import metrics as pr

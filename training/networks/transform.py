@@ -1,13 +1,13 @@
-import torch
-import torch.nn as nn
-import torch.nn.parallel
-
+# import torch
+# import torch.nn as nn
+# import torch.nn.parallel
+import jittor as jt
 from . import pix2pix
 from .misc import set_requires_grad
 from .diffaug import DiffAugment
 
 
-class RepeatChannel(nn.Module):
+class RepeatChannel(jt.nn.Module):
     def __init__(self, repeat):
         super(RepeatChannel, self).__init__()
         self.repeat = repeat
@@ -16,29 +16,29 @@ class RepeatChannel(nn.Module):
         return img.repeat(1, self.repeat, 1, 1)
 
 
-class Downsample(nn.Module):
+class Downsample(jt.nn.Module):
     def __init__(self, n_iter):
         super(Downsample, self).__init__()
         self.n_iter = n_iter
 
     def forward(self, img):
         for _ in range(self.n_iter):
-            img = nn.functional.interpolate(img, scale_factor=0.5, mode='bicubic')
+            img = jt.nn.interpolate(img, scale_factor=0.5, mode='bicubic')
         return img
 
 
-class Upsample(nn.Module):
+class Upsample(jt.nn.Module):
     def __init__(self, n_iter):
         super(Upsample, self).__init__()
         self.n_iter = n_iter
 
     def forward(self, img):
         for _ in range(self.n_iter):
-            img = nn.functional.interpolate(img, scale_factor=2.0, mode='bicubic')
+            img = jt.nn.interpolate(img, scale_factor=2.0, mode='bicubic')
         return img
 
 
-class OutputTransform(nn.Module):
+class OutputTransform(jt.nn.Module):
     def __init__(self, opt, process='', diffaug_policy=''):
         super(OutputTransform, self).__init__()
         self.opt = opt
@@ -63,12 +63,12 @@ class OutputTransform(nn.Module):
                 transforms.append(sketch)
             else:
                 ValueError("Transforms contains unrecognizable key: %s" % p)
-        self.transforms = nn.Sequential(*transforms)
+        self.transforms = jt.nn.Sequential(*transforms)
 
     def setup_sketch(self, opt):
         sketch = pix2pix.ResnetGenerator(3, 1, n_blocks=9, use_dropout=False)
 
-        state_dict = torch.load(opt.photosketch_path, map_location='cpu')
+        state_dict = jt.load(opt.photosketch_path, map_location='cpu')
         if hasattr(state_dict, '_metadata'):
             del state_dict._metadata
 
