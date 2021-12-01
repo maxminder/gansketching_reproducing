@@ -33,7 +33,8 @@ class Upsample(jt.nn.Module):
 
         self.factor = factor
         kernel = make_kernel(kernel) * (factor ** 2)
-        self.register_buffer("kernel", kernel)
+        # self.register_buffer("kernel", kernel)
+        self._kernel = kernel
 
         p = kernel.shape[0] - factor
 
@@ -78,8 +79,8 @@ class Blur(jt.nn.Module):
         if upsample_factor > 1:
             kernel = kernel * (upsample_factor ** 2)
 
-        self.register_buffer("kernel", kernel)
-
+        # self.register_buffer("kernel", kernel) 存疑
+        self._kernel = kernel
         self.pad = pad
 
     def forward(self, input):
