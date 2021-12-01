@@ -88,7 +88,7 @@ if __name__ == '__main__':
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    netG = Generator(args.size, 512, 8).to(device)
+    netG = Generator(args.size, 512, 8)#.to(device)
     checkpoint = jt.load(args.ckpt)
 
     netG.load_state_dict(checkpoint)
