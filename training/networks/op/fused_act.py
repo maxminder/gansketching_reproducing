@@ -71,7 +71,7 @@ class FusedLeakyReLUFunction(jt.Function):
         return out
 
     @staticmethod
-    def backward(ctx, grad_output):
+    def grad(ctx, grad_output):
         out, = ctx.saved_tensors
 
         grad_input, grad_bias = FusedLeakyReLUFunctionBackward.apply(
