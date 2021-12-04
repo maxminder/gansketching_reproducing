@@ -13,7 +13,7 @@ class PixelNorm(nn.Module):
         super().__init__()
 
     def forward(self, input):
-        return input * torch.rsqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
+        return input / torch.sqrt(torch.mean(input ** 2, dim=1, keepdim=True) + 1e-8)
 
 
 def make_kernel(k):
@@ -225,8 +225,8 @@ class ModulatedConv2d(nn.Module):
         weight = self.scale * self.weight * style
 
         if self.demodulate:
-            demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
-            weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
+            demod = torch.sqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
+            weight = weight / demod.view(batch, self.out_channel, 1, 1, 1)
 
         weight = weight.view(
             batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
