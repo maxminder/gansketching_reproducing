@@ -27,65 +27,65 @@ def make_kernel(k):
     return k
 
 
-# class Upsample(nn.Module):
-#     def __init__(self, kernel, factor=2):
-#         super().__init__()
+class Upsample(nn.Module):
+    def __init__(self, kernel, factor=2):
+        super().__init__()
 
-#         self.factor = factor
-#         kernel = make_kernel(kernel) * (factor ** 2)
-#         self.register_buffer("kernel", kernel)
+        self.factor = factor
+        kernel = make_kernel(kernel) * (factor ** 2)
+        self.register_buffer("kernel", kernel)
 
-#         p = kernel.shape[0] - factor
+        p = kernel.shape[0] - factor
 
-#         pad0 = (p + 1) // 2 + factor - 1
-#         pad1 = p // 2
+        pad0 = (p + 1) // 2 + factor - 1
+        pad1 = p // 2
 
-#         self.pad = (pad0, pad1)
+        self.pad = (pad0, pad1)
 
-#     def forward(self, input):
-#         out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
+    def forward(self, input):
+        out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
 
-#         return out
-
-
-# class Downsample(nn.Module):
-#     def __init__(self, kernel, factor=2):
-#         super().__init__()
-
-#         self.factor = factor
-#         kernel = make_kernel(kernel)
-#         self.register_buffer("kernel", kernel)
-
-#         p = kernel.shape[0] - factor
-
-#         pad0 = (p + 1) // 2
-#         pad1 = p // 2
-
-#         self.pad = (pad0, pad1)
-
-#     def forward(self, input):
-#         out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
-
-#         return out
+        return out
 
 
-# class Blur(nn.Module):
-#     def __init__(self, kernel, pad, upsample_factor=1):
-#         super().__init__()
+class Downsample(nn.Module):
+    def __init__(self, kernel, factor=2):
+        super().__init__()
 
-#         kernel = make_kernel(kernel)
+        self.factor = factor
+        kernel = make_kernel(kernel)
+        self.register_buffer("kernel", kernel)
 
-#         if upsample_factor > 1:
-#             kernel = kernel * (upsample_factor ** 2)
+        p = kernel.shape[0] - factor
 
-#         self.register_buffer("kernel", kernel)
+        pad0 = (p + 1) // 2
+        pad1 = p // 2
 
-#         self.pad = pad
+        self.pad = (pad0, pad1)
 
-#     def forward(self, input):
-#         out = upfirdn2d(input, self.kernel, pad=self.pad)
+    def forward(self, input):
+        out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
 
-#         return out
+        return out
+
+
+class Blur(nn.Module):
+    def __init__(self, kernel, pad, upsample_factor=1):
+        super().__init__()
+
+        kernel = make_kernel(kernel)
+
+        if upsample_factor > 1:
+            kernel = kernel * (upsample_factor ** 2)
+
+        self.register_buffer("kernel", kernel)
+
+        self.pad = pad
+
+    def forward(self, input):
+        out = upfirdn2d(input, self.kernel, pad=self.pad)
+
+        return out
 
 
 class EqualConv2d(nn.Module):
