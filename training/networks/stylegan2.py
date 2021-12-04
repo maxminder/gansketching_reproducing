@@ -240,7 +240,13 @@ class ModulatedConv2d(nn.Module):
             weight = weight.transpose(1, 2).reshape(
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
-            out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
+            #out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
+            input = torch.split(input,in_channel,dim=1)
+            weight = torch.split(weight,in_channel,dim=0)
+            result =  []
+            for i in range(len(input)):
+                result.append(torch.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
+            out = torch.concat(result,dim=1)
             _, _, height, width = out.shape
             out = out.view(batch, self.out_channel, height, width)
             out = self.blur(out)
@@ -526,9 +532,20 @@ class Generator(nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        for conv1, conv2, noise1, noise2, to_rgb in zip(
-            self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
-        ):
+        # for conv1, conv2, noise1, noise2, to_rgb in zip(
+        #     self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
+        # ):
+        #     out = conv1(out, latent[:, i], noise=noise1)
+        #     out = conv2(out, latent[:, i + 1], noise=noise2)
+        #     skip = to_rgb(out, latent[:, i + 2], skip)
+
+        #     i += 2
+        for j in range(len(self.to_rgbs)):
+            conv1 = self.convs[2*j]
+            conv2 = self.convs[2*j+1]
+            noise1 = noise[2*j+1]
+            noise2 = noise[2*j+2]
+            to_rgb = self.to_rgbs[j]
             out = conv1(out, latent[:, i], noise=noise1)
             out = conv2(out, latent[:, i + 1], noise=noise2)
             skip = to_rgb(out, latent[:, i + 2], skip)
