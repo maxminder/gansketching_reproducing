@@ -247,6 +247,7 @@ class ModulatedConv2d(jt.nn.Module):
             out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2)
             _, _, height, width = out.shape
             # out = out.view(batch, self.out_channel, height, width)
+            print(out.shape)
             out = jt.view(out, (batch, self.out_channel, height, width))
             out = self.blur(out)
 
