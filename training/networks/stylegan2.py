@@ -132,11 +132,11 @@ class EqualLinear(nn.Module):
     ):
         super().__init__()
 
-        self.weight = nn.Parameter(torch.randn(out_dim, in_dim).div_(lr_mul))
+        self.weight = nn.Parameter(torch.randn(out_dim, in_dim)/(lr_mul))
 
         if bias:
-            self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
-
+            #self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
+            self.bias = nn.Parameter(nn.init.constant(out_dim,value=bias_init))
         else:
             self.bias = None
 
