@@ -148,14 +148,14 @@ class EqualLinear(nn.Module):
     def forward(self, input):
         if self.activation:
             # out = F.linear(input, self.weight * self.scale)
-            out = torch.matmul(input, torch.transpose(self.weight*self.scale))
+            out = torch.matmul(input, torch.transpose(self.weight*self.scale,0,1))
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
         else:
             # out = F.linear(
             #     input, self.weight * self.scale, bias=self.bias * self.lr_mul
             # )
-            out = torch.matmul(input, torch.transpose(self.weight*self.scale)) + self.bias * self.lr_mul
+            out = torch.matmul(input, torch.transpose(self.weight*self.scale,0,1)) + self.bias * self.lr_mul
 
         return out
 
