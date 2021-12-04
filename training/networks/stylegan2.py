@@ -340,8 +340,8 @@ class ToRGB(nn.Module):
     def __init__(self, in_channel, style_dim, upsample=True, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
-        # if upsample:
-        #     self.upsample = Upsample(blur_kernel)
+        if upsample:
+            self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
         self.bias = nn.Parameter(torch.zeros(1, 3, 1, 1))
