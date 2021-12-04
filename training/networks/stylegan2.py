@@ -184,21 +184,21 @@ class ModulatedConv2d(nn.Module):
         self.upsample = upsample
         self.downsample = downsample
 
-        # if upsample:
-        #     factor = 2
-        #     p = (len(blur_kernel) - factor) - (kernel_size - 1)
-        #     pad0 = (p + 1) // 2 + factor - 1
-        #     pad1 = p // 2 + 1
+        if upsample:
+            factor = 2
+            p = (len(blur_kernel) - factor) - (kernel_size - 1)
+            pad0 = (p + 1) // 2 + factor - 1
+            pad1 = p // 2 + 1
 
-        #     self.blur = Blur(blur_kernel, pad=(pad0, pad1), upsample_factor=factor)
+            self.blur = Blur(blur_kernel, pad=(pad0, pad1), upsample_factor=factor)
 
-        # if downsample:
-        #     factor = 2
-        #     p = (len(blur_kernel) - factor) + (kernel_size - 1)
-        #     pad0 = (p + 1) // 2
-        #     pad1 = p // 2
+        if downsample:
+            factor = 2
+            p = (len(blur_kernel) - factor) + (kernel_size - 1)
+            pad0 = (p + 1) // 2
+            pad1 = p // 2
 
-        #     self.blur = Blur(blur_kernel, pad=(pad0, pad1))
+            self.blur = Blur(blur_kernel, pad=(pad0, pad1))
 
         fan_in = in_channel * kernel_size ** 2
         self.scale = 1 / math.sqrt(fan_in)
