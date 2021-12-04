@@ -248,6 +248,7 @@ class ModulatedConv2d(jt.nn.Module):
             _, _, height, width = out.shape
             # out = out.view(batch, self.out_channel, height, width)
             print(out.shape)
+            print(self.out_channel)
             out = jt.view(out, (batch, self.out_channel, height, width))
             out = self.blur(out)
 
