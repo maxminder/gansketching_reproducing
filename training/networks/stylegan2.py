@@ -1,9 +1,10 @@
 import math
 import random
-import jittor as jt
+
 # import torch
 # from torch import nn
 # from torch.nn import functional as F
+import jittor as jt
 
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
@@ -35,7 +36,6 @@ class Upsample(jt.nn.Module):
         kernel = make_kernel(kernel) * (factor ** 2)
         # self.register_buffer("kernel", kernel)
         self.kernel = kernel
-
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2 + factor - 1
@@ -55,8 +55,8 @@ class Downsample(jt.nn.Module):
 
         self.factor = factor
         kernel = make_kernel(kernel)
-        self.register_buffer("kernel", kernel)
-
+        # self.register_buffer("kernel", kernel)
+        self.kernel = kernel
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2
@@ -79,7 +79,7 @@ class Blur(jt.nn.Module):
         if upsample_factor > 1:
             kernel = kernel * (upsample_factor ** 2)
 
-        # self.register_buffer("kernel", kernel) 存疑
+        #self.register_buffer("kernel", kernel)
         self.kernel = kernel
         self.pad = pad
 
@@ -132,12 +132,12 @@ class EqualLinear(jt.nn.Module):
         self, in_dim, out_dim, bias=True, bias_init=0, lr_mul=1, activation=None
     ):
         super().__init__()
+
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
         if bias:
-            # self.bias = jt.nn.Parameter(jt.zeros(out_dim).fill_(bias_init))
+            # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
             self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
-
         else:
             self.bias = None
 
@@ -228,8 +228,8 @@ class ModulatedConv2d(jt.nn.Module):
         weight = self.scale * self.weight * style
 
         if self.demodulate:
-            demod = 1/jt.sqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
-            weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
+            demod = jt.sqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
+            weight = weight / demod.view(batch, self.out_channel, 1, 1, 1)
 
         weight = weight.view(
             batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
@@ -243,7 +243,7 @@ class ModulatedConv2d(jt.nn.Module):
             weight = weight.transpose(1, 2).reshape(
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
-            # out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch) #存疑
+            # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
             input = jt.misc.split(input,in_channel,dim=1)
             weight = jt.misc.split(weight,in_channel,dim=0)
             result =  []
@@ -252,8 +252,7 @@ class ModulatedConv2d(jt.nn.Module):
             #out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
             out = jt.concat(result,dim=1)
             _, _, height, width = out.shape
-            # out = out.view(batch, self.out_channel, height, width)
-            out = jt.view(out, (batch, self.out_channel, height, width))
+            out = out.view(batch, self.out_channel, height, width)
             out = self.blur(out)
 
         elif self.downsample:
@@ -306,7 +305,7 @@ class WShift(jt.nn.Module):
         super().__init__()
         self.w_shift = jt.nn.Parameter(jt.zeros(1, style_dim))
 
-    def execute(self, input):
+    def exxecute(self, input):
         out = input + self.w_shift
         return out
 
@@ -356,7 +355,7 @@ class ToRGB(jt.nn.Module):
             self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
-        self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
+        self.bias = jt.nn.Parameter(jt.zeros(1, 3, 1, 1))
 
     def execute(self, input, style, skip=None):
         out = self.conv(input, style)
@@ -426,17 +425,14 @@ class Generator(jt.nn.Module):
         self.upsamples = jt.nn.ModuleList()
         self.to_rgbs = jt.nn.ModuleList()
         self.noises = jt.nn.Module()
-        # self.noises = []
 
         in_channel = self.channels[4]
 
         for layer_idx in range(self.num_layers):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]
-            # self.noises.register_buffer(f"noise_{layer_idx}", jt.randn(*shape))
-            #self.noises.append(jt.randn(*shape))
+            # self.noises.register_buffer(f"noise_{layer_idx}", torch.randn(*shape))
             setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape))
-            #self.noises.register_buffer(f"noise_{layer_idx}", jt.randn(*shape))
 
         for i in range(3, self.log_size + 1):
             out_channel = self.channels[2 ** i]
@@ -465,8 +461,6 @@ class Generator(jt.nn.Module):
         self.n_latent = self.log_size * 2 - 2
 
     def make_noise(self):
-        # device = self.input.input.device
-
         noises = [jt.randn(1, 1, 2 ** 2, 2 ** 2)]
 
         for i in range(3, self.log_size + 1):
@@ -507,7 +501,6 @@ class Generator(jt.nn.Module):
                 noise = [
                     getattr(self.noises, f"noise_{i}") for i in range(self.num_layers)
                 ]
-                # noise = self.noises
 
         if truncation < 1:
             style_t = []
@@ -543,11 +536,14 @@ class Generator(jt.nn.Module):
         skip = self.to_rgb1(out, latent[:, 1])
 
         i = 1
-        # print(self.to_rgbs.__len__())
-        # print(self.convs.__len__(), noise.__len__())
         # for conv1, conv2, noise1, noise2, to_rgb in zip(
         #     self.convs[::2], self.convs[1::2], noise[1::2], noise[2::2], self.to_rgbs
         # ):
+        #     out = conv1(out, latent[:, i], noise=noise1)
+        #     out = conv2(out, latent[:, i + 1], noise=noise2)
+        #     skip = to_rgb(out, latent[:, i + 2], skip)
+
+        #     i += 2
         for j in range(self.to_rgbs.__len__()):
             conv1 = self.convs[2*j]
             conv2 = self.convs[2*j+1]
