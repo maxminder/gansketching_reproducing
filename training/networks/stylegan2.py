@@ -248,7 +248,7 @@ class ModulatedConv2d(jt.nn.Module):
             weight = jt.misc.split(weight,in_channel,dim=0)
             result =  []
             for i in range(len(input)):
-                result.append(jt.nn.conv_transpose2d(input[i],weight[len(input)-i-1],padding=0,stride=2))
+                result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
             #out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
             out = jt.concat(result,dim=1)
             _, _, height, width = out.shape
