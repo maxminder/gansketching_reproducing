@@ -44,7 +44,7 @@ class Upsample(jt.nn.Module):
         self.pad = (pad0, pad1)
 
     def execute(self, input):
-        out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
+        out = upfirdn2d(input, self._kernel, up=self.factor, down=1, pad=self.pad)
 
         return out
 
@@ -84,7 +84,7 @@ class Blur(jt.nn.Module):
         self.pad = pad
 
     def execute(self, input):
-        out = upfirdn2d(input, self.kernel, pad=self.pad)
+        out = upfirdn2d(input, self._kernel, pad=self.pad)
 
         return out
 
