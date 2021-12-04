@@ -224,39 +224,40 @@ class ModulatedConv2d(nn.Module):
         style = self.modulation(style).view(batch, 1, in_channel, 1, 1)
         weight = self.scale * self.weight * style
 
-        # if self.demodulate:
-        #     demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
-        #     weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
+        if self.demodulate:
+            demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
+            weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
 
-        # weight = weight.view(
-        #     batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
-        # )
+        weight = weight.view(
+            batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
+        )
 
-        # if self.upsample:
-        #     input = input.view(1, batch * in_channel, height, width)
-        #     weight = weight.view(
-        #         batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
-        #     )
-        #     weight = weight.transpose(1, 2).reshape(
-        #         batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
-        #     )
-        #     out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-        #     _, _, height, width = out.shape
-        #     out = out.view(batch, self.out_channel, height, width)
-        #     out = self.blur(out)
+        if self.upsample:
+            input = input.view(1, batch * in_channel, height, width)
+            weight = weight.view(
+                batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
+            )
+            weight = weight.transpose(1, 2).reshape(
+                batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
+            )
+            out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
+            _, _, height, width = out.shape
+            out = out.view(batch, self.out_channel, height, width)
+            out = self.blur(out)
 
-        # elif self.downsample:
-        #     input = self.blur(input)
-        #     _, _, height, width = input.shape
-        #     input = input.view(1, batch * in_channel, height, width)
-        #     out = F.conv2d(input, weight, padding=0, stride=2, groups=batch)
-        #     _, _, height, width = out.shape
-        #     out = out.view(batch, self.out_channel, height, width)
+        elif self.downsample:
+            input = self.blur(input)
+            _, _, height, width = input.shape
+            input = input.view(1, batch * in_channel, height, width)
+            out = F.conv2d(input, weight, padding=0, stride=2, groups=batch)
+            _, _, height, width = out.shape
+            out = out.view(batch, self.out_channel, height, width)
 
-        input = input.view(1, batch * in_channel, height, width)
-        out = F.conv2d(input, weight, padding=self.padding, groups=batch)
-        _, _, height, width = out.shape
-        out = out.view(batch, self.out_channel, height, width)
+        else:
+            input = input.view(1, batch * in_channel, height, width)
+            out = F.conv2d(input, weight, padding=self.padding, groups=batch)
+            _, _, height, width = out.shape
+            out = out.view(batch, self.out_channel, height, width)
 
         return out
 
@@ -556,20 +557,20 @@ class ConvLayer(nn.Sequential):
     ):
         layers = []
 
-        # if downsample:
-        #     factor = 2
-        #     p = (len(blur_kernel) - factor) + (kernel_size - 1)
-        #     pad0 = (p + 1) // 2
-        #     pad1 = p // 2
+        if downsample:
+            factor = 2
+            p = (len(blur_kernel) - factor) + (kernel_size - 1)
+            pad0 = (p + 1) // 2
+            pad1 = p // 2
 
-        #     layers.append(Blur(blur_kernel, pad=(pad0, pad1)))
+            layers.append(Blur(blur_kernel, pad=(pad0, pad1)))
 
-        #     stride = 2
-        #     self.padding = 0
+            stride = 2
+            self.padding = 0
 
-        # else:
-        stride = 1
-        self.padding = kernel_size // 2
+        else:
+            stride = 1
+            self.padding = kernel_size // 2
 
         layers.append(
             EqualConv2d(
