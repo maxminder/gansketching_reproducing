@@ -38,7 +38,7 @@ def generate(args, netG, device, mean_latent):
 
         # Generate images from a file of input noises
         if args.fixed_z is not None:
-            sample_z = jt.load(args.fixed_z, map_location=device) + w_shift
+            sample_z = jt.load(args.fixed_z) + w_shift
             for start in range(0, sample_z.size(0), args.batch_size):
                 end = min(start + args.batch_size, sample_z.size(0))
                 z_batch = sample_z[start:end]
@@ -83,7 +83,6 @@ if __name__ == '__main__':
     if args.seed is not None:
         random.seed(args.seed)
         jt.set_seed(args.seed)
-        jt.set_global_seed(args.seed)
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
