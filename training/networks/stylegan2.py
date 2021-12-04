@@ -224,34 +224,34 @@ class ModulatedConv2d(nn.Module):
         style = self.modulation(style).view(batch, 1, in_channel, 1, 1)
         weight = self.scale * self.weight * style
 
-        if self.demodulate:
-            demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
-            weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
+        # if self.demodulate:
+        #     demod = torch.rsqrt(weight.pow(2).sum([2, 3, 4]) + 1e-8)
+        #     weight = weight * demod.view(batch, self.out_channel, 1, 1, 1)
 
-        weight = weight.view(
-            batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
-        )
+        # weight = weight.view(
+        #     batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
+        # )
 
-        if self.upsample:
-            input = input.view(1, batch * in_channel, height, width)
-            weight = weight.view(
-                batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
-            )
-            weight = weight.transpose(1, 2).reshape(
-                batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
-            )
-            out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            _, _, height, width = out.shape
-            out = out.view(batch, self.out_channel, height, width)
-            out = self.blur(out)
+        # if self.upsample:
+        #     input = input.view(1, batch * in_channel, height, width)
+        #     weight = weight.view(
+        #         batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
+        #     )
+        #     weight = weight.transpose(1, 2).reshape(
+        #         batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
+        #     )
+        #     out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
+        #     _, _, height, width = out.shape
+        #     out = out.view(batch, self.out_channel, height, width)
+        #     out = self.blur(out)
 
-        elif self.downsample:
-            input = self.blur(input)
-            _, _, height, width = input.shape
-            input = input.view(1, batch * in_channel, height, width)
-            out = F.conv2d(input, weight, padding=0, stride=2, groups=batch)
-            _, _, height, width = out.shape
-            out = out.view(batch, self.out_channel, height, width)
+        # elif self.downsample:
+        #     input = self.blur(input)
+        #     _, _, height, width = input.shape
+        #     input = input.view(1, batch * in_channel, height, width)
+        #     out = F.conv2d(input, weight, padding=0, stride=2, groups=batch)
+        #     _, _, height, width = out.shape
+        #     out = out.view(batch, self.out_channel, height, width)
 
         input = input.view(1, batch * in_channel, height, width)
         out = F.conv2d(input, weight, padding=self.padding, groups=batch)
@@ -339,8 +339,8 @@ class ToRGB(nn.Module):
     def __init__(self, in_channel, style_dim, upsample=True, blur_kernel=[1, 3, 3, 1]):
         super().__init__()
 
-        # if upsample:
-        #     self.upsample = Upsample(blur_kernel)
+        if upsample:
+            self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
         self.bias = nn.Parameter(torch.zeros(1, 3, 1, 1))
