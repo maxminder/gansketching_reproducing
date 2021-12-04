@@ -263,9 +263,9 @@ class ModulatedConv2d(jt.nn.Module):
 
         #else:
         input = input.view(1, batch * in_channel, height, width)
-        print(input.shape, weight.shape)
-        out = jt.nn.conv2d(input, weight, padding=self.padding)
-        print(out.shape)
+        print(input.shape)
+        out = jt.nn.conv2d(input, weight, padding=self.padding, groups=batch)
+        print(out)
         _, _, height, width = out.shape
         out = out.view(batch, self.out_channel, height, width)
 
