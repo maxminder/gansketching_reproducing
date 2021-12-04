@@ -235,37 +235,39 @@ class ModulatedConv2d(jt.nn.Module):
             batch * self.out_channel, in_channel, self.kernel_size, self.kernel_size
         )
 
-        if self.upsample:
-            input = input.view(1, batch * in_channel, height, width)
-            weight = weight.view(
-                batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
-            )
-            weight = weight.transpose(1, 2).reshape(
-                batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
-            )
-            # out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch) #存疑
-            print(input.shape)
-            out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2)
-            _, _, height, width = out.shape
-            # out = out.view(batch, self.out_channel, height, width)
-            print(out.shape)
-            print(self.out_channel)
-            out = jt.view(out, (batch, self.out_channel, height, width))
-            out = self.blur(out)
+        # if self.upsample:
+        #     input = input.view(1, batch * in_channel, height, width)
+        #     weight = weight.view(
+        #         batch, self.out_channel, in_channel, self.kernel_size, self.kernel_size
+        #     )
+        #     weight = weight.transpose(1, 2).reshape(
+        #         batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
+        #     )
+        #     # out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch) #存疑
+        #     print(input.shape)
+        #     out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2)
+        #     _, _, height, width = out.shape
+        #     # out = out.view(batch, self.out_channel, height, width)
+        #     print(out.shape)
+        #     print(self.out_channel)
+        #     out = jt.view(out, (batch, self.out_channel, height, width))
+        #     out = self.blur(out)
 
-        elif self.downsample:
-            input = self.blur(input)
-            _, _, height, width = input.shape
-            input = input.view(1, batch * in_channel, height, width)
-            out = jt.nn.conv2d(input, weight, padding=0, stride=2, groups=batch)
-            _, _, height, width = out.shape
-            out = out.view(batch, self.out_channel, height, width)
+        # elif self.downsample:
+        #     input = self.blur(input)
+        #     _, _, height, width = input.shape
+        #     input = input.view(1, batch * in_channel, height, width)
+        #     out = jt.nn.conv2d(input, weight, padding=0, stride=2, groups=batch)
+        #     _, _, height, width = out.shape
+        #     out = out.view(batch, self.out_channel, height, width)
 
-        else:
-            input = input.view(1, batch * in_channel, height, width)
-            out = jt.nn.conv2d(input, weight, padding=self.padding, groups=batch)
-            _, _, height, width = out.shape
-            out = out.view(batch, self.out_channel, height, width)
+        #else:
+        input = input.view(1, batch * in_channel, height, width)
+        print(input.shape)
+        out = jt.nn.conv2d(input, weight, padding=self.padding)
+        print(out.shape)
+        _, _, height, width = out.shape
+        out = out.view(batch, self.out_channel, height, width)
 
         return out
 
