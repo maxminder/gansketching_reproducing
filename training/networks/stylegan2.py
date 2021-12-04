@@ -353,7 +353,7 @@ class ToRGB(jt.nn.Module):
         super().__init__()
 
         if upsample:
-            self.upsample = jt.nn.Upsample(blur_kernel)
+            self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
         self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
