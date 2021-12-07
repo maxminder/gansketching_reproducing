@@ -143,12 +143,12 @@ class GANModel(jt.nn.Module):
         netD_sketch = networks.define_D(opt) if opt.isTrain else None
 
         if opt.g_pretrained != '':
-            weights = jt.load(opt.g_pretrained, map_location=lambda storage, loc: storage)
+            weights = jt.load(opt.g_pretrained)
             netG.load_state_dict(weights, strict=False)
 
         if netD_sketch is not None and opt.d_pretrained != '' and not opt.dsketch_no_pretrain:
             print("Using pretrained weight for D1...")
-            weights = jt.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
+            weights = jt.load(opt.d_pretrained)
             netD_sketch.load_state_dict(weights)
 
         if opt.l_image > 0:
@@ -156,7 +156,7 @@ class GANModel(jt.nn.Module):
             netD_image = networks.define_D(opt)
             if opt.d_pretrained != '':
                 print("Using pretrained weight for D_image...")
-                weights = jt.load(opt.d_pretrained, map_location=lambda storage, loc: storage)
+                weights = jt.load(opt.d_pretrained)
                 netD_image.load_state_dict(weights)
             netD = [netD_sketch, netD_image]
         else:
