@@ -50,7 +50,7 @@ def create_dataloader(data_dir, size, batch, img_channel=3):
     transform = jt.transform.Compose([
             jt.transform.Resize(size),
             jt.transform.ToTensor(),
-            jt.transform.Normalize(mean, std, inplace=True),
+            jt.transform.ImageNormalize(mean, std),
         ])
 
     if img_channel == 1:
