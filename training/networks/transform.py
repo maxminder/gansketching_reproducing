@@ -68,7 +68,7 @@ class OutputTransform(jt.nn.Module):
     def setup_sketch(self, opt):
         sketch = pix2pix.ResnetGenerator(3, 1, n_blocks=9, use_dropout=False)
 
-        state_dict = jt.load(opt.photosketch_path, map_location='cpu')
+        state_dict = jt.load(opt.photosketch_path)
         if hasattr(state_dict, '_metadata'):
             del state_dict._metadata
 

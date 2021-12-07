@@ -127,7 +127,7 @@ def run_precision_recall(real_feats, fake_feats):
 
 def setup_generator(ckpt_path, w_shift=False):
     g = Generator(256, 512, 8, w_shift=w_shift)
-    ckpt = jt.load(ckpt_path, map_location='cpu')
+    ckpt = jt.load(ckpt_path)
     g.load_state_dict(ckpt)
     g.eval()
     return g
