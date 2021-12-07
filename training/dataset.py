@@ -13,7 +13,7 @@ IMAGE_EXTENSIONS = {'bmp', 'jpg', 'jpeg', 'pgm', 'png', 'ppm',
                     'tif', 'tiff', 'webp'}
 class ImagePathDataset(dataset.Dataset):
     def __init__(self,drop_last, batch_size, path, image_mode='L', transform=None, max_images=None):
-        super.__init__(batch_size=batch_size,shuffle=True,drop_last=drop_last)
+        super().__init__(batch_size=batch_size,shuffle=True,drop_last=drop_last)
         path = pathlib.Path(path)
         files = sorted([file for ext in IMAGE_EXTENSIONS
                        for file in path.glob('*.{}'.format(ext))])
