@@ -8,7 +8,7 @@ import numpy as np
 from PIL import Image
 from training.networks.stylegan2 import Generator
 
-def gen_principal_components(dump_name, device='cpu'):
+def gen_principal_components(dump_name):
     'Get principle components from GANSpace.'
     with np.load(dump_name) as data:
         # lat_comp = torch.from_numpy(data['lat_comp']).to(device)
@@ -57,7 +57,7 @@ if (__name__ == '__main__'):
             jt.set_global_seed(args.seed)
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
-        netG = Generator(args.size, 512, 8).to(device)
+        netG = Generator(args.size, 512, 8)
         #checkpoint = torch.load(args.ckpt, map_location='cpu')
         checkpoint = jt.load(args.ckpt)
         netG.load_parameters(checkpoint)
@@ -68,7 +68,7 @@ if (__name__ == '__main__'):
         (k, s) = (args.comp_id, args.scalar)
         (l_start, l_end) = [int(d) for d in args.layers.split(',')]
         layers = range(l_start, (l_end + 1))
-        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}.npz', device=device)
+        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}.npz')
         w_comp = lat_comp[k]
         w_std = lat_std[k]
         if (args.fixed_z is None):
