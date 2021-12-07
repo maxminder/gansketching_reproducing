@@ -30,8 +30,8 @@ def lerp(a, b, t):
 
 
 def compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', crop=False, batch_size=25, device='cuda'):
-    percept = lpips.LPIPS(net='vgg').to(device)
-    g.to(device)
+    percept = lpips.LPIPS(net='vgg')
+    # g.to(device)
 
     distances = []
 
@@ -43,11 +43,11 @@ def compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', c
         for batch in tqdm(batch_sizes):
             noise = g.make_noise()
             latent_dim = 512
-            inputs = jt.randn([batch * 2, latent_dim], device=device)
+            inputs = jt.randn([batch * 2, latent_dim])
             if sampling == 'full':
-                lerp_t = jt.rand(batch, device=device)
+                lerp_t = jt.rand(batch)
             else:
-                lerp_t = jt.zeros(batch, device=device)
+                lerp_t = jt.zeros(batch)
 
             if space == 'w':
                 latent = g.get_latent(inputs)
