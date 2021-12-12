@@ -135,6 +135,7 @@ class GANTrainer():
             interp_z_file = './cache_files/interp_z.pth'
 
         if os.path.exists(sample_z_file):
+            print(sample_z_file)
             self.sample_z = jt.load(sample_z_file)
         else:
             if self.opt.reduce_visuals:
