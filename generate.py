@@ -3,10 +3,11 @@ import argparse
 
 import random
 import numpy as np
-# import torch
-# from torchvision import utils
+import torch
+from torchvision import utils
 import jittor as jt
 from training.networks.stylegan2 import Generator
+# from PIL import Image
 
 
 def save_image_pytorch(img, name):
@@ -15,11 +16,15 @@ def save_image_pytorch(img, name):
     jt.misc.save_image(
         img,
         name,
-        nrow=1,
+        # nrow=1,
         padding=0,
         normalize=True,
         range=(-1, 1),
     )
+    # grid = 
+    # ndarr = (grid*255+0.5).clamp(0, 255).permute(1, 2, 0).uint8().numpy()
+    # im = Image.fromarray(ndarr)
+    # im.save(name, format=None)
 
 # def save_image_pytorch(img, name):
 #     """Helper function to save torch tensor into an image file."""
