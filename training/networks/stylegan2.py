@@ -1,9 +1,5 @@
 import math
 import random
-
-# import torch
-# from torch import nn
-# from torch.nn import functional as F
 import jittor as jt
 
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
@@ -305,7 +301,7 @@ class WShift(jt.nn.Module):
         super().__init__()
         self.w_shift = jt.nn.Parameter(jt.zeros(1, style_dim))
 
-    def exxecute(self, input):
+    def execute(self, input):
         out = input + self.w_shift
         return out
 
