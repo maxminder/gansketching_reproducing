@@ -22,9 +22,8 @@ def save_image_pytorch(img, name):
     #     normalize=True,
     #     range=(-1, 1),
     # )
-    img.unsqueeze(0)
     img = jt.clamp(img, -1, 1)
-    img = (img + 1) / 2
+    img = (img + 1.) / 2.
 
     grid = img
     
