@@ -7,24 +7,30 @@ import torch
 from torchvision import utils
 import jittor as jt
 from training.networks.stylegan2 import Generator
-# from PIL import Image
+from PIL import Image
+import math
 
 
 def save_image_pytorch(img, name):
     """Helper function to save torch tensor into an image file."""
-    print(img.shape)
-    jt.misc.save_image(
-        img,
-        name,
-        # nrow=1,
-        padding=0,
-        normalize=True,
-        range=(-1, 1),
-    )
-    # grid = 
-    # ndarr = (grid*255+0.5).clamp(0, 255).permute(1, 2, 0).uint8().numpy()
-    # im = Image.fromarray(ndarr)
-    # im.save(name, format=None)
+    # print(img.shape)
+    # jt.misc.save_image(
+    #     img,
+    #     name,
+    #     nrow=1,
+    #     padding=0,
+    #     normalize=True,
+    #     range=(-1, 1),
+    # )
+    img.unsqueeze(0)
+    img = jt.clamp(img, -1, 1)
+    img = (img + 1) / 2
+
+    grid = img
+    
+    ndarr = (grid*255+0.5).clamp(0, 255).permute(1, 2, 0).uint8().numpy()
+    im = Image.fromarray(ndarr)
+    im.save(name, format=None)
 
 # def save_image_pytorch(img, name):
 #     """Helper function to save torch tensor into an image file."""
