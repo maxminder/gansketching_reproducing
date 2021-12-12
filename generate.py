@@ -71,7 +71,6 @@ def generate(args, netG, device, mean_latent):
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
-                print(s.type)
                 s = torch.Tensor(s.numpy())
                 save_image_pytorch(s, f'{args.save_dir}/{str(ind).zfill(6)}.png')
                 ind += 1
