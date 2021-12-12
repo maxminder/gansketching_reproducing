@@ -66,7 +66,7 @@ if (__name__ == '__main__'):
         (k, s) = (args.comp_id, args.scalar)
         (l_start, l_end) = [int(d) for d in args.layers.split(',')]
         layers = range(l_start, (l_end + 1))
-        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}.npz')
+        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}_test.npz')
         w_comp = lat_comp[k]
         w_std = lat_std[k]
         if (args.fixed_z is None):
