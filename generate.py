@@ -53,7 +53,6 @@ def generate(args, netG, device, mean_latent):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
-
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
@@ -83,6 +82,7 @@ if __name__ == '__main__':
     if args.seed is not None:
         random.seed(args.seed)
         jt.set_seed(args.seed)
+        jt.set_global_seed(args.seed)
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
