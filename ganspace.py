@@ -68,7 +68,7 @@ if (__name__ == '__main__'):
         layers = range(l_start, (l_end + 1))
         (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}_test.npz')
         w_comp = lat_comp[k]
-        w_std = lat_std[k]
+        w_std = None
         if (args.fixed_z is None):
             #z = jt.randn(args.samples, 512).to(device)
             z = jt.randn(args.samples, 512)
