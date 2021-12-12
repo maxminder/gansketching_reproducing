@@ -12,15 +12,15 @@ def gen_principal_components(dump_name, device='cpu'):
     'Get principle components from GANSpace.'
     with np.load(dump_name) as data:
         lat_comp = jt.float32(data['lat_comp'])    #to device?
-        lat_mean = jt.random((3,3))# jt.float32(data['lat_mean'])
-        lat_std = jt.random((3,3)) #data['lat_stdev']
+        lat_mean = jt.float32(data['lat_mean'])
+        lat_std = data['lat_stdev']
     return (lat_comp, lat_mean, lat_std)
 
 def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False, trunc=0.5):
     'Apply GANSpace edits.'
     if (not w_plus):
         latents = latents[:, None, :].repeat(1, 18, 1)
-    latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s))) #* w_std))
+    latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
     im = g([latents], input_is_latent=True, truncation=trunc, truncation_latent=mean_latent)[0]
     #im = im.cpu().numpy().transpose((0, 2, 3, 1))
     im = im.numpy().transpose((0, 2, 3, 1))
@@ -66,9 +66,9 @@ if (__name__ == '__main__'):
         (k, s) = (args.comp_id, args.scalar)
         (l_start, l_end) = [int(d) for d in args.layers.split(',')]
         layers = range(l_start, (l_end + 1))
-        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}_test.npz')
+        (lat_comp, lat_mean, lat_std) = gen_principal_components(f'./weights/ganspace_{args.obj}.npz')
         w_comp = lat_comp[k]
-        w_std = None
+        w_std = lat_std[k]
         if (args.fixed_z is None):
             #z = jt.randn(args.samples, 512).to(device)
             z = jt.randn(args.samples, 512)
