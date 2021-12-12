@@ -15,8 +15,6 @@ if (__name__ == '__main__'):
     parser.add_argument('--ckpt', type=str, default=None, help='checkpoint file for the generator')
     args = parser.parse_args()
     with jt.no_grad():
-        if (not os.path.exists(args.save_dir)):
-            os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
         checkpoint = jt.load(args.ckpt)
         netG.load_parameters(checkpoint)
