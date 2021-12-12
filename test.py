@@ -21,7 +21,8 @@ if (__name__ == '__main__'):
         z = jt.randn(5000, 512)
         latents = netG.get_latent(z)
         pca = PCA(n_components=100)
-        lat_cop = jt.transpose(pca.fit_transform(jt.transpose(latents,(1,0))),(1,0))
+        lat_cop = pca.fit_transform(latents.transpose(1,0)).transpose(1,0)
+        lat_cop = jt.float32(lat_cop)
         lat_cop = lat_cop.view(100,1,512)
         np.savez(f'output/ganspace_fur_standing_cat_test.npz',lat_comp=lat_cop)
     
