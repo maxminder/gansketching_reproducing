@@ -20,6 +20,7 @@ if (__name__ == '__main__'):
         netG.load_parameters(checkpoint)
         z = jt.randn(5000, 512)
         latents = netG.get_latent(z)
+        latents = latents.numpy()
         pca = PCA(n_components=100)
         lat_cop = pca.fit_transform(latents.transpose(1,0)).transpose(1,0)
         lat_cop = jt.float32(lat_cop)
