@@ -12,10 +12,10 @@ from training.networks.stylegan2 import Generator
 if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     pca = PCA(n_components=100)
-    parser.add_argument('--ckpt', type=str, default=None, help='checkpoint file for the generator')
+    parser.add_argument('--ckpt', type=str, default='weights/photosketch_standing_cat_noaug.pth', help='checkpoint file for the generator')
     args = parser.parse_args()
     with jt.no_grad():
-        netG = Generator(args.size, 512, 8)
+        netG = Generator(256, 512, 8)
         checkpoint = jt.load(args.ckpt)
         netG.load_parameters(checkpoint)
         z = jt.randn(5000, 512)
