@@ -3,6 +3,7 @@ import random
 #import torch
 import jittor as jt
 from training import networks
+from training.networks.transform import OutputTransform
 
 
 class GANModel(jt.nn.Module):
@@ -26,8 +27,8 @@ class GANModel(jt.nn.Module):
             self.netD_sketch = self.netD
 
         # transform modules to convert generator output to sketches, etc.
-        self.tf_real = networks.OutputTransform(opt, process=opt.transform_real, diffaug_policy=opt.diffaug_policy)
-        self.tf_fake = networks.OutputTransform(opt, process=opt.transform_fake, diffaug_policy=opt.diffaug_policy)
+        self.tf_real = OutputTransform(opt, process=opt.transform_real, diffaug_policy=opt.diffaug_policy)
+        self.tf_fake = OutputTransform(opt, process=opt.transform_fake, diffaug_policy=opt.diffaug_policy)
 
     # Entry point for all calls involving forward pass of deep networks.
     def forward(self, data, mode):
@@ -144,7 +145,7 @@ class GANModel(jt.nn.Module):
 
         if opt.g_pretrained != '':
             weights = jt.load(opt.g_pretrained)
-            netG.load_state_dict(weights, strict=False)
+            netG.load_state_dict(weights)
 
         if netD_sketch is not None and opt.d_pretrained != '' and not opt.dsketch_no_pretrain:
             print("Using pretrained weight for D1...")
