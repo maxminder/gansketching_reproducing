@@ -25,5 +25,5 @@ if (__name__ == '__main__'):
         lat_cop = pca.fit_transform(latents.transpose(1,0)).transpose(1,0)
         lat_cop = jt.float32(lat_cop)
         lat_cop = lat_cop.view(100,1,512)
-        np.savez(f'output/ganspace_fur_standing_cat_test.npz',lat_comp=lat_cop)
+        np.savez(f'./weights/ganspace_fur_standing_cat_test.npz',lat_comp=lat_cop)
     
