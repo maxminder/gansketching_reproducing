@@ -53,6 +53,10 @@ def generate(args, netG, device, mean_latent):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
+            print(jt.mean(sample_z))
+            print(jt.std(sample_z))
+            print(arg.truncation)
+            print(mean_latent)
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
