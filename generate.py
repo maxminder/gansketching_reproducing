@@ -3,26 +3,16 @@ import argparse
 
 import random
 import numpy as np
-import torch
-from torchvision import utils
+# import torch
+# from torchvision import utils
 import jittor as jt
 from training.networks.stylegan2 import Generator
 
 
-# def save_image_pytorch(img, name):
-#     """Helper function to save torch tensor into an image file."""
-#     jt.misc.save_image(
-#         img,
-#         name,
-#         nrow=1,
-#         padding=0,
-#         normalize=True,
-#         range=(-1, 1),
-#     )
-
 def save_image_pytorch(img, name):
     """Helper function to save torch tensor into an image file."""
-    utils.save_image(
+    print(img.shape)
+    jt.misc.save_image(
         img,
         name,
         nrow=1,
@@ -30,6 +20,17 @@ def save_image_pytorch(img, name):
         normalize=True,
         range=(-1, 1),
     )
+
+# def save_image_pytorch(img, name):
+#     """Helper function to save torch tensor into an image file."""
+#     utils.save_image(
+#         img,
+#         name,
+#         nrow=1,
+#         padding=0,
+#         normalize=True,
+#         range=(-1, 1),
+#     )
 
 
 def generate(args, netG, device, mean_latent):
@@ -71,7 +72,7 @@ def generate(args, netG, device, mean_latent):
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
-                s = torch.Tensor(s.numpy())
+                # s = torch.Tensor(s.numpy())
                 save_image_pytorch(s, f'{args.save_dir}/{str(ind).zfill(6)}.png')
                 ind += 1
 
