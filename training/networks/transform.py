@@ -12,7 +12,7 @@ class RepeatChannel(jt.nn.Module):
         super(RepeatChannel, self).__init__()
         self.repeat = repeat
 
-    def forward(self, img):
+    def execute(self, img):
         return img.repeat(1, self.repeat, 1, 1)
 
 
@@ -21,7 +21,7 @@ class Downsample(jt.nn.Module):
         super(Downsample, self).__init__()
         self.n_iter = n_iter
 
-    def forward(self, img):
+    def execute(self, img):
         for _ in range(self.n_iter):
             img = jt.nn.interpolate(img, scale_factor=0.5, mode='bicubic')
         return img
@@ -32,7 +32,7 @@ class Upsample(jt.nn.Module):
         super(Upsample, self).__init__()
         self.n_iter = n_iter
 
-    def forward(self, img):
+    def execute(self, img):
         for _ in range(self.n_iter):
             img = jt.nn.interpolate(img, scale_factor=2.0, mode='bicubic')
         return img
