@@ -32,7 +32,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
 
 def save_ims(prefix, ims):
     for (ind, im) in enumerate(ims):
-        Image.fromarray(im).save((prefix + f'{ind}.png'))
+        Image.fromarray(im).save((prefix + f'.png'))
 if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     parser.add_argument('--obj', type=str, choices=['cat', 'horse', 'church'], help='which StyleGAN2 class to use')
@@ -43,7 +43,7 @@ if (__name__ == '__main__'):
     parser.add_argument('--ckpt', type=str, default=None, help='checkpoint file for the generator')
     parser.add_argument('--fixed_z', type=str, default=None, help='expect a .pth file. If given, will use this file as the input noise for the output')
     parser.add_argument('--size', type=int, default=256, help='output size of the generator')
-    parser.add_argument('--samples', type=int, default=20, help='number of samples to generate, will be overridden if --fixed_z is given')
+    parser.add_argument('--samples', type=int, default=1, help='number of samples to generate, will be overridden if --fixed_z is given')
     parser.add_argument('--truncation', type=float, default=0.5, help='strength of truncation')
     parser.add_argument('--truncation_mean', type=int, default=4096, help='number of samples to calculate the mean latent for truncation')
     parser.add_argument('--seed', type=int, default=None, help='if specified, use a fixed random seed')
@@ -51,11 +51,11 @@ if (__name__ == '__main__'):
     args = parser.parse_args()
     device = args.device
     with jt.no_grad():
-        if (args.seed is not None):
-            random.seed(args.seed)
-            jt.set_seed(args.seed)
-            #torch.cuda.manual_seed_all(args.seed)
-            jt.set_global_seed(args.seed)
+        # if (args.seed is not None):
+        #     random.seed(args.seed)
+        #     jt.set_seed(args.seed)
+        #     #torch.cuda.manual_seed_all(args.seed)
+        #     jt.set_global_seed(args.seed)
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
@@ -79,7 +79,11 @@ if (__name__ == '__main__'):
             #z = jt.load(args.fixed_z, map_location='cpu').to(device)
             z = jt.load(args.fixed_z, map_location='cpu')
         latents = netG.get_latent(z)
-        ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, 0, layers, trunc=args.truncation)
-        save_ims(f'./{args.save_dir}/before_', ims)
-        ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, s, layers, trunc=args.truncation)
-        save_ims(f'./{args.save_dir}/after_', ims)
+        # ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, 0, layers, trunc=args.truncation)
+        # save_ims(f'./{args.save_dir}/before_', ims)
+        # ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, s, layers, trunc=args.truncation)
+        # save_ims(f'./{args.save_dir}/after_', ims)
+        num = int(s/0.5)
+        for i in range(num):
+            ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, num*0.5, layers, trunc=args.truncation)
+            save_ims(f'./{args.save_dir}/before_'+str(num), ims)

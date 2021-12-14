@@ -115,7 +115,7 @@ Our model preserves the latent space editability of the original model. Our mode
 
 ```
 # add fur to the standing cats
-python ganspace.py --obj cat --comp_id 27 --scalar 50 --layers 2,4 --ckpt weights/photosketch_standing_cat_noaug.pth --save_dir output/ganspace_fur_standing_cat
+python ganspace.py --obj cat --comp_id 27 --scalar 20 --layers 2,4 --ckpt weights/photosketch_standing_cat_noaug.pth --save_dir output/ganspace_fur_standing_cat
 
 # close the eyes of the standing cats
 python ganspace.py --obj cat --comp_id 45 --scalar 60 --layers 5,7 --ckpt weights/photosketch_standing_cat_noaug.pth --save_dir output/ganspace_eye_standing_cat
