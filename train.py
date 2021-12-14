@@ -17,8 +17,8 @@ def training_loop():
     opt.isTrain = True
 
     # needs to switch to spawn mode to be compatible with evaluation
-    # if not opt.disable_eval:
-    #     mp.set_start_method('spawn')    #存疑
+    if not opt.disable_eval:
+        mp.set_start_method('spawn')    #存疑
     print(mp.get_start_method())
 
     # dataloader for user sketches
