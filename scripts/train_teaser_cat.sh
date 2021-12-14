@@ -1,4 +1,5 @@
 #!/bin/bash
+rm -r cache_files
 python train.py \
 --name teaser_cat_augment --batch 4 \
 --dataroot_sketch ./data/sketch/by_author/cat \

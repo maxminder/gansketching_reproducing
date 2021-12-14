@@ -1,6 +1,6 @@
 import os
 import numpy as np
-import torch
+#import torch
 #import torchvision.utils
 import jittor as jt
 from .gan_model import GANModel
