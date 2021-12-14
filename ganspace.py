@@ -20,7 +20,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
     'Apply GANSpace edits.'
     if (not w_plus):
         latents = latents[:, None, :].repeat(1, 18, 1)
-    boundaries = g.stype_weights()
+    boundaries = g.style_weights()
     boundary = boundaries[0]
     #latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
     latents[:, layers, :] = (latents[:, layers, :] + boundary*0.5)
