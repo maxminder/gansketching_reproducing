@@ -1,6 +1,4 @@
 #from jittor.utils.pytorch_converter import convert
-import torch
-import jittor as jt
 import numpy as np
 #from torch._C import device
 # inputs = torch.randn(1, 4, 5, 5)
@@ -14,6 +12,7 @@ import numpy as np
 # y = torch.conv_transpose2d(inputs,weights,padding=1,groups=4)
 # print(x==y)
 #x = jt.nn.conv_transpose2d(inputs, weights, padding=1)
-a = jt.ones((2,3))
-a = np.array(a)
-print(a)
+a = np.random.rand(2,3)
+b = np.random.rand(2,5)
+a = np.concatenate((a,b),axis=1)
+print(a.shape)

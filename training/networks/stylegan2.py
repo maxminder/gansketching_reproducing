@@ -1,6 +1,7 @@
 import math
 import random
 import jittor as jt
+import numpy as np
 
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
@@ -475,6 +476,16 @@ class Generator(jt.nn.Module):
 
     def get_latent(self, input):
         return self.style(input)
+    
+    def style_weights(self):
+        weights = []
+        weights.append(np.array(self.conv1.conv.weight*self.conv1.conv.scale).T)
+        for styleconv in self.convs:
+            weights.append(np.array(styleconv.conv.weight*styleconv.conv.scale).T)
+        weight = np.concatenate(weights, axis=1).astype(np.float32)
+        weight = weight / np.linalg.norm(weight, axis=0, keepdims=True)
+        eigen_values, eigen_vectors = np.linalg.eig(weight.dot(weight.T))
+        return eigen_vectors.T
 
     def execute(
         self,
