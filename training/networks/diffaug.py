@@ -50,8 +50,8 @@ def rand_contrast(x):
 
 def rand_translation(x, ratio=0.125):
     shift_x, shift_y = int(x.size(2) * ratio + 0.5), int(x.size(3) * ratio + 0.5)
-    translation_x = jt.randint(-shift_x, shift_x + 1, size=[x.size(0), 1, 1])
-    translation_y = jt.randint(-shift_y, shift_y + 1, size=[x.size(0), 1, 1])
+    translation_x = jt.randint(-shift_x, shift_x + 1, shape=[x.size(0), 1, 1])
+    translation_y = jt.randint(-shift_y, shift_y + 1, shape=[x.size(0), 1, 1])
     grid_batch, grid_x, grid_y = jt.meshgrid(
         jt.arange(x.size(0), dtype=jt.int64),
         jt.arange(x.size(2), dtype=jt.int64),
@@ -67,8 +67,8 @@ def rand_translation(x, ratio=0.125):
 
 def rand_cutout(x, ratio=0.5):
     cutout_size = int(x.size(2) * ratio + 0.5), int(x.size(3) * ratio + 0.5)
-    offset_x = jt.randint(0, x.size(2) + (1 - cutout_size[0] % 2), size=[x.size(0), 1, 1])
-    offset_y = jt.randint(0, x.size(3) + (1 - cutout_size[1] % 2), size=[x.size(0), 1, 1])
+    offset_x = jt.randint(0, x.size(2) + (1 - cutout_size[0] % 2), shape=[x.size(0), 1, 1])
+    offset_y = jt.randint(0, x.size(3) + (1 - cutout_size[1] % 2), shape=[x.size(0), 1, 1])
     grid_batch, grid_x, grid_y = jt.meshgrid(
         jt.arange(end=x.size(0), dtype=jt.int64),
         jt.arange(end=cutout_size[0], dtype=jt.int64),
