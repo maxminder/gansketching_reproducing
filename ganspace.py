@@ -48,7 +48,7 @@ if (__name__ == '__main__'):
     parser.add_argument('--truncation_mean', type=int, default=4096, help='number of samples to calculate the mean latent for truncation')
     parser.add_argument('--seed', type=int, default=None, help='if specified, use a fixed random seed')
     parser.add_argument('--device', type=str, default='cuda')
-    parser.add_argument('--slice', type=int, default=0.5)
+    parser.add_argument('--slice', type=float, default=0.5)
     args = parser.parse_args()
     device = args.device
     with jt.no_grad():
