@@ -89,6 +89,6 @@ if (__name__ == '__main__'):
         for i in range(num):
             print(i*slice)
             ims = apply_shift(k, netG, mean_latent, latents, w_comp, w_std, -i*slice, layers, trunc=args.truncation)
-            save_ims(f'./{args.save_dir}/neg_'+str(i), ims)
+            save_ims(f'./{args.save_dir}/neg_'+str(num-1-i), ims)
             ims = apply_shift(k, netG, mean_latent, latents, w_comp, w_std, i*slice, layers, trunc=args.truncation)
             save_ims(f'./{args.save_dir}/pos_'+str(i), ims)
