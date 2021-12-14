@@ -31,7 +31,7 @@ class GANModel(jt.nn.Module):
         self.tf_fake = OutputTransform(opt, process=opt.transform_fake, diffaug_policy=opt.diffaug_policy)
 
     # Entry point for all calls involving forward pass of deep networks.
-    def forward(self, data, mode):
+    def execute(self, data, mode):
         real_sketch, real_image = self.preprocess_input(data)
 
         if mode == 'generator':
