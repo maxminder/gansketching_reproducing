@@ -86,5 +86,5 @@ if (__name__ == '__main__'):
         num = int(s/0.5)
         for i in range(num):
             print(i)
-            ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, num*0.5, layers, trunc=args.truncation)
+            ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, i*0.5, layers, trunc=args.truncation)
             save_ims(f'./{args.save_dir}/before_'+str(i), ims)
