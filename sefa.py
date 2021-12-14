@@ -6,5 +6,5 @@ comp_id = range(8,100)
 next2 = ' --save_dir output/ganspace_fur_standing_cat_'
 for i in comp_id:
     for layer in layers:
-        command = prefix + layer + next + str(i) + next2 + str(i)
+        command = prefix + layer + next + str(i) + next2 + str(i) + '/' + layer
         os.system(command)
