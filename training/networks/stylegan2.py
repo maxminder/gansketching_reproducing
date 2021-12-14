@@ -479,9 +479,9 @@ class Generator(jt.nn.Module):
     
     def style_weights(self):
         weights = []
-        weights.append(np.array(self.conv1.conv.weight*self.conv1.conv.scale).T)
+        weights.append(np.array(self.conv1.conv.weight*self.conv1.conv.scale))
         for styleconv in self.convs:
-            weights.append(np.array(styleconv.conv.weight*styleconv.conv.scale).T)
+            weights.append(np.array(styleconv.conv.weight*styleconv.conv.scale))
         weight = np.concatenate(weights, axis=1).astype(np.float32)
         weight = weight / np.linalg.norm(weight, axis=0, keepdims=True)
         eigen_values, eigen_vectors = np.linalg.eig(weight.dot(weight.T))
