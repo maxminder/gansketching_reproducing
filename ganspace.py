@@ -52,11 +52,11 @@ if (__name__ == '__main__'):
     args = parser.parse_args()
     device = args.device
     with jt.no_grad():
-        # if (args.seed is not None):
-        #     random.seed(args.seed)
-        #     jt.set_seed(args.seed)
-        #     #torch.cuda.manual_seed_all(args.seed)
-        #     jt.set_global_seed(args.seed)
+        if (args.seed is not None):
+            random.seed(args.seed)
+            jt.set_seed(args.seed)
+            #torch.cuda.manual_seed_all(args.seed)
+            jt.set_global_seed(args.seed)
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
