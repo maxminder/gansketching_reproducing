@@ -23,7 +23,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
     boundaries = g.style_weights()
     boundary = boundaries[0]
     #latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
-    latents[:, layers, :] = (latents[:, layers, :] + boundary*0.5)
+    latents[:, layers, :] = (latents[:, layers, :] + boundary*s)
     im = g([latents], input_is_latent=True, truncation=trunc, truncation_latent=mean_latent)[0]
     #im = im.cpu().numpy().transpose((0, 2, 3, 1))
     im = im.numpy().transpose((0, 2, 3, 1))
