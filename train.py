@@ -17,15 +17,18 @@ def training_loop():
     opt.isTrain = True
 
     # needs to switch to spawn mode to be compatible with evaluation
-    if not opt.disable_eval:
-        mp.set_start_method('spawn')    #存疑
+    # if not opt.disable_eval:
+    #     mp.set_start_method('spawn')    #存疑
+    # mp.set_start_method('spawn')
     print(mp.get_start_method())
 
+    print("dataloader for user sketches")
     # dataloader for user sketches
     dataloader_sketch, sampler_sketch = create_dataloader(opt.dataroot_sketch,
                                                           opt.size,
                                                           opt.batch,
                                                           opt.sketch_channel)
+    print("dataloader for image regularization")
     # dataloader for image regularization
     if opt.dataroot_image is not None:
         dataloader_image, sampler_image = create_dataloader(opt.dataroot_image,
