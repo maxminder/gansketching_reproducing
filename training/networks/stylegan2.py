@@ -481,8 +481,6 @@ class Generator(jt.nn.Module):
         weights = []
         weights.append(np.array(self.conv1.conv.modulation.weight*self.conv1.conv.modulation.scale).T)
         for styleconv in self.convs:
-            temp = np.array(styleconv.conv.modulation.weight*styleconv.conv.modulation.scale)
-            print(temp.shape)
             weights.append(np.array(styleconv.conv.modulation.weight*styleconv.conv.modulation.scale).T)
         weight = np.concatenate(weights, axis=1).astype(np.float32)
         weight = weight / np.linalg.norm(weight, axis=0, keepdims=True)
