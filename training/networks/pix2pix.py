@@ -214,7 +214,7 @@ class ResnetGenerator(jt.nn.Module):
                  jt.nn.Conv2d(input_nc, ngf, kernel_size=7, padding=0,
                            bias=use_bias),
                  norm_layer(ngf),
-                 jt.nn.ReLU(True)]
+                 jt.nn.ReLU()]
 
         n_downsampling = 2
         for i in range(n_downsampling):
@@ -222,7 +222,7 @@ class ResnetGenerator(jt.nn.Module):
             model += [jt.nn.Conv2d(ngf * mult, ngf * mult * 2, kernel_size=3,
                                 stride=2, padding=1, bias=use_bias),
                       norm_layer(ngf * mult * 2),
-                      jt.nn.ReLU(True)]
+                      jt.nn.ReLU()]
 
         mult = 2**n_downsampling
         for i in range(n_blocks):
@@ -235,7 +235,7 @@ class ResnetGenerator(jt.nn.Module):
                                          padding=1, output_padding=1,
                                          bias=use_bias),
                       norm_layer(int(ngf * mult / 2)),
-                      jt.nn.ReLU(True)]
+                      jt.nn.ReLU()]
         model += [jt.nn.ReflectionPad2d(3)]
         model += [jt.nn.Conv2d(ngf, output_nc, kernel_size=7, padding=0)]
         model += [jt.nn.Tanh()]
@@ -266,7 +266,7 @@ class ResnetBlock(jt.nn.Module):
 
         conv_block += [jt.nn.Conv2d(dim, dim, kernel_size=3, padding=p, bias=use_bias),
                        norm_layer(dim),
-                       jt.nn.ReLU(True)]
+                       jt.nn.ReLU()]
         if use_dropout:
             conv_block += [jt.nn.Dropout(0.5)]
         else:
@@ -330,9 +330,9 @@ class UnetSkipConnectionBlock(jt.nn.Module):
             input_nc = outer_nc
         downconv = jt.nn.Conv2d(input_nc, inner_nc, kernel_size=4,
                              stride=2, padding=1, bias=use_bias)
-        downrelu = jt.nn.LeakyReLU(0.2, True)
+        downrelu = jt.nn.LeakyReLU(0.2)
         downnorm = norm_layer(inner_nc)
-        uprelu = jt.nn.ReLU(True)
+        uprelu = jt.nn.ReLU()
         upnorm = norm_layer(outer_nc)
 
         if outermost:
@@ -384,7 +384,7 @@ class NLayerDiscriminator(jt.nn.Module):
         padw = 1
         sequence = [
             jt.nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
 
         # 128
@@ -398,7 +398,7 @@ class NLayerDiscriminator(jt.nn.Module):
                 jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw, stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                jt.nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2)
             ]
         # 64
         # 32
@@ -409,7 +409,7 @@ class NLayerDiscriminator(jt.nn.Module):
             jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=kw, stride=1, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
         # 31
 
@@ -438,7 +438,7 @@ class GlobalDiscriminator(jt.nn.Module):
         padw = 1
         sequence = [
             jt.nn.Conv2d(input_nc, ndf, kernel_size=kw, stride=2, padding=padw),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
 
         # 128
@@ -451,7 +451,7 @@ class GlobalDiscriminator(jt.nn.Module):
                 jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw, stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                jt.nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2)
             ]
         # 64
         # 32
@@ -462,7 +462,7 @@ class GlobalDiscriminator(jt.nn.Module):
             jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=kw, stride=2, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
         # 16
 
@@ -492,7 +492,7 @@ class GlobalNPDiscriminator(jt.nn.Module):
         padw = 0
         sequence = [
             jt.nn.Conv2d(input_nc, ndf, kernel_size=kw[0], stride=2, padding=padw),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
         # 125
         nf_mult = 1
@@ -504,7 +504,7 @@ class GlobalNPDiscriminator(jt.nn.Module):
                 jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                           kernel_size=kw[n], stride=2, padding=padw, bias=use_bias),
                 norm_layer(ndf * nf_mult),
-                jt.nn.LeakyReLU(0.2, True)
+                jt.nn.LeakyReLU(0.2)
             ]
         # 62
         # 30
@@ -515,7 +515,7 @@ class GlobalNPDiscriminator(jt.nn.Module):
             jt.nn.Conv2d(ndf * nf_mult_prev, ndf * nf_mult,
                       kernel_size=4, stride=2, padding=padw, bias=use_bias),
             norm_layer(ndf * nf_mult),
-            jt.nn.LeakyReLU(0.2, True)
+            jt.nn.LeakyReLU(0.2)
         ]
         # 14
 
@@ -543,10 +543,10 @@ class PixelDiscriminator(jt.nn.Module):
 
         self.net = [
             jt.nn.Conv2d(input_nc, ndf, kernel_size=1, stride=1, padding=0),
-            jt.nn.LeakyReLU(0.2, True),
+            jt.nn.LeakyReLU(0.2),
             jt.nn.Conv2d(ndf, ndf * 2, kernel_size=1, stride=1, padding=0, bias=use_bias),
             norm_layer(ndf * 2),
-            jt.nn.LeakyReLU(0.2, True),
+            jt.nn.LeakyReLU(0.2),
             jt.nn.Conv2d(ndf * 2, 1, kernel_size=1, stride=1, padding=0, bias=use_bias)]
 
         if use_sigmoid:
