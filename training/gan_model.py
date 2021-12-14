@@ -177,11 +177,11 @@ class GANModel(jt.nn.Module):
     def preprocess_input(self, data):
         # move to GPU and change data types
         # data['noise'] = data.get('noise', None)
-        data['image'] = data.get('image', None)
-        if self.use_gpu():
-            data['sketch'] = data['sketch'].cuda()
-            if data['image'] is not None:
-                data['image'] = data['image'].cuda()
+        # data['image'] = data.get('image', None)
+        # if self.use_gpu():
+        #     data['sketch'] = data['sketch'].cuda()
+        #     if data['image'] is not None:
+        #         data['image'] = data['image'].cuda()
         return data['sketch'], data['image']
 
     def compute_generator_loss(self):
