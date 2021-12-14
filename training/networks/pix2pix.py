@@ -242,7 +242,7 @@ class ResnetGenerator(jt.nn.Module):
 
         self.model = jt.nn.Sequential(*model)
 
-    def forward(self, input):
+    def execute(self, input):
         return self.model(input)
 
 
@@ -286,7 +286,7 @@ class ResnetBlock(jt.nn.Module):
 
         return jt.nn.Sequential(*conv_block)
 
-    def forward(self, x):
+    def execute(self, x):
         out = x + self.conv_block(x)
         return out
 
@@ -310,7 +310,7 @@ class UnetGenerator(jt.nn.Module):
 
         self.model = unet_block
 
-    def forward(self, input):
+    def execute(self, input):
         return self.model(input)
 
 
@@ -363,7 +363,7 @@ class UnetSkipConnectionBlock(jt.nn.Module):
 
         self.model = jt.nn.Sequential(*model)
 
-    def forward(self, x):
+    def execute(self, x):
         if self.outermost:
             return self.model(x)
         else:
@@ -421,7 +421,7 @@ class NLayerDiscriminator(jt.nn.Module):
 
         self.model = jt.nn.Sequential(*sequence)
 
-    def forward(self, input):
+    def execute(self, input):
         return self.model(input)
 
 class GlobalDiscriminator(jt.nn.Module):
@@ -474,7 +474,7 @@ class GlobalDiscriminator(jt.nn.Module):
 
         self.model = jt.nn.Sequential(*sequence)
 
-    def forward(self, input):
+    def execute(self, input):
         return self.model(input)
 
 class GlobalNPDiscriminator(jt.nn.Module):
@@ -529,7 +529,7 @@ class GlobalNPDiscriminator(jt.nn.Module):
 
         self.model = jt.nn.Sequential(*sequence)
 
-    def forward(self, input):
+    def execute(self, input):
         return self.model(input)
 
 class PixelDiscriminator(jt.nn.Module):
@@ -554,6 +554,6 @@ class PixelDiscriminator(jt.nn.Module):
 
         self.net = jt.nn.Sequential(*self.net)
 
-    def forward(self, input):
+    def execute(self, input):
         return self.net(input)
 

@@ -97,7 +97,7 @@ class GANLoss(jt.nn.Module):
 
 
 class RegularizeD(jt.nn.Module):
-    def forward(self, real_pred, real_img):
+    def execute(self, real_pred, real_img):
         # in case of patchGAN, take average of per-pixel predictions, and sum over batches
         outputs = real_pred.reshape(real_pred.shape[0], -1).mean(1).sum()
         grad_real, = jt.grad(
@@ -118,7 +118,7 @@ class WeightLoss(jt.nn.Module):
             jt.float32(p, requires_grad=False) for p in params
         ]
 
-    def forward(self, params):
+    def execute(self, params):
         losses = []
         for i in range(len(params)):
             losses.append((params[i] - self.ref_weights[i]).abs().mean())
