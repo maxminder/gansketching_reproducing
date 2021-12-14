@@ -14,6 +14,6 @@ import numpy as np
 # y = torch.conv_transpose2d(inputs,weights,padding=1,groups=4)
 # print(x==y)
 #x = jt.nn.conv_transpose2d(inputs, weights, padding=1)
-a = jt.ones(2,3)
+a = jt.ones((2,3))
 a = np.array(a)
 print(a)
