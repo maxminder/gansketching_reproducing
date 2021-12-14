@@ -16,12 +16,12 @@ def gen_principal_components(dump_name, device='cpu'):
         lat_std = data['lat_stdev']
     return (lat_comp, lat_mean, lat_std)
 
-def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False, trunc=0.5):
+def apply_shift(id, g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False, trunc=0.5):
     'Apply GANSpace edits.'
     if (not w_plus):
         latents = latents[:, None, :].repeat(1, 18, 1)
     boundaries = g.style_weights()
-    boundary = boundaries[0]
+    boundary = boundaries[id]
     #latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
     latents[:, layers, :] = (latents[:, layers, :] + boundary*s)
     im = g([latents], input_is_latent=True, truncation=trunc, truncation_latent=mean_latent)[0]
@@ -48,6 +48,7 @@ if (__name__ == '__main__'):
     parser.add_argument('--truncation_mean', type=int, default=4096, help='number of samples to calculate the mean latent for truncation')
     parser.add_argument('--seed', type=int, default=None, help='if specified, use a fixed random seed')
     parser.add_argument('--device', type=str, default='cuda')
+    parser.add_argument('--slice', type=int, default=0.5)
     args = parser.parse_args()
     device = args.device
     with jt.no_grad():
@@ -83,8 +84,9 @@ if (__name__ == '__main__'):
         # save_ims(f'./{args.save_dir}/before_', ims)
         # ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, s, layers, trunc=args.truncation)
         # save_ims(f'./{args.save_dir}/after_', ims)
-        num = int(s/0.5)
+        slice = args.slice
+        num = int(s/slice)
         for i in range(num):
-            print(i)
-            ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, i*0.5, layers, trunc=args.truncation)
+            print(i*slice)
+            ims = apply_shift(k, netG, mean_latent, latents, w_comp, w_std, i*slice, layers, trunc=args.truncation)
             save_ims(f'./{args.save_dir}/before_'+str(i), ims)
