@@ -63,8 +63,8 @@ def create_dataloader(data_dir, size, batch, img_channel=3):
     dataset = ImagePathDataset(True, batch, data_dir, image_mode, transform)
 
     sampler = data_sampler(dataset, shuffle=True)
-    #loader = jt.dataset.DataLoader(dataset, batch_size=batch, sampler=sampler, drop_last=True)
-    loader = dataset
+    loader = jt.dataset.DataLoader(dataset, batch_size=batch, sampler=sampler, drop_last=True)
+    #loader = dataset
     return loader, sampler
 
 

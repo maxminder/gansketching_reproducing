@@ -54,13 +54,16 @@ def training_loop():
     for epoch in range(opt.max_epoch):
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
-
+        print('dataloader_sketch')
+        print(enumerate(dataloader_sketch))
         for i, data_sketch in enumerate(dataloader_sketch):  # inner loop within one epoch
             if total_iters >= opt.max_iter:
                 return
 
             # makes dictionary to store all inputs
             data = {}
+            print('data_sketch')
+            print(data_sketch)
             data['sketch'] = data_sketch
             if opt.dataroot_image is not None:
                 data_image = next(data_yield_image)
