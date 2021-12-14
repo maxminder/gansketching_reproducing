@@ -79,7 +79,7 @@ class GANLoss(jt.nn.Module):
             else:
                 return input.mean()
 
-    def forward(self, input, target_is_real, for_discriminator=True):
+    def execute(self, input, target_is_real, for_discriminator=True):
         # computing loss is a bit complicated because |input| may not be
         # a tensor, but list of tensors in case of multiscale discriminator
         if isinstance(input, list):
