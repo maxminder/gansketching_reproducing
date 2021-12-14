@@ -77,7 +77,7 @@ class OutputTransform(jt.nn.Module):
         set_requires_grad(sketch.parameters(), False)
         return sketch
 
-    def forward(self, img, apply_aug=True):
+    def execute(self, img, apply_aug=True):
         img = self.transforms(img)
         if apply_aug and self.augment is not None:
             img = self.augment(img)
