@@ -38,9 +38,10 @@ class GANTrainer():
     def run_generator_one_step(self, data):
         g_losses, generated = self.gan_model(data, mode='generator')
         g_loss = sum(g_losses.values()).mean()
-        self.optimizer_G.zero_grad()
-        g_loss.backward()
-        self.optimizer_G.step()
+        # self.optimizer_G.zero_grad()
+        # g_loss.backward()
+        # self.optimizer_G.step()
+        self.optimizer_G.step(g_loss)
         self.generated = generated
         update_dict(self.g_losses, g_losses)
 
@@ -48,27 +49,30 @@ class GANTrainer():
         output = self.gan_model(data, mode='generator-regularize')
         g_reg_losses, trackables = output
         g_reg_loss = sum(g_reg_losses.values()).mean()
-        self.optimizer_G.zero_grad()
-        g_reg_loss.backward()
-        self.optimizer_G.step()
+        # self.optimizer_G.zero_grad()
+        # g_reg_loss.backward()
+        # self.optimizer_G.step()
+        self.optimizer_G.step(g_reg_loss)
         update_dict(self.g_losses, g_reg_losses)
         update_dict(self.trackables, trackables)
 
     def run_discriminator_one_step(self, data):
         d_losses, interm_imgs = self.gan_model(data, mode='discriminator')
         d_loss = sum(d_losses.values()).mean()
-        self.optimizer_D.zero_grad()
-        d_loss.backward()
-        self.optimizer_D.step()
+        # self.optimizer_D.zero_grad()
+        # d_loss.backward()
+        # self.optimizer_D.step()
+        self.optimizer_D.step(d_loss)
         update_dict(self.d_losses, d_losses)
         update_dict(self.interm_imgs, interm_imgs)
 
     def run_discriminator_regularization_one_step(self, data):
         d_reg_losses = self.gan_model(data, mode='discriminator-regularize')
         d_reg_loss = sum(d_reg_losses.values()).mean()
-        self.optimizer_D.zero_grad()
-        d_reg_loss.backward()
-        self.optimizer_D.step()
+        # self.optimizer_D.zero_grad()
+        # d_reg_loss.backward()
+        # self.optimizer_D.step()
+        self.optimizer_D.step(d_reg_loss)
         update_dict(self.d_losses, d_reg_losses)
 
     def train_one_step(self, data, iters):
