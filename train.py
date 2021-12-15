@@ -56,7 +56,7 @@ def training_loop():
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
         print('dataloader_sketch')
         print(enumerate(dataloader_sketch))
-        for i, data_sketch in enumerate(dataloader_sketch):  # inner loop within one epoch
+        for i, data_sketch in dataloader_sketch:  # inner loop within one epoch
             if total_iters >= opt.max_iter:
                 return
 
