@@ -5,5 +5,4 @@ import torch
 #from torch._C import device
 stddev = torch.Tensor([[1,2,3],[2,3,4]])
 stddev = stddev - stddev.mean(1,keepdim=True)
-print(stddev.mean(1).shape)
-print(stddev)
+print(stddev.ndim)
