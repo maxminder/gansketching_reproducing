@@ -21,6 +21,7 @@ def training_loop():
     # if not opt.disable_eval:
     #     mp.set_start_method('spawn')    #存疑
     # mp.set_start_method('spawn')
+    print(opt.disable_eval)
     if not opt.disable_eval:
         mp.set_start_method('spawn')   
     print(mp.get_start_method())
