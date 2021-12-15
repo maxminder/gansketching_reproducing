@@ -680,8 +680,12 @@ class Discriminator(jt.nn.Module):
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
         # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        stddev = stddev.numpy()
-        stddev = jt.array(stddev.var(0))
+        # stddev = stddev.numpy()
+        # stddev = jt.array(stddev.var(0))
+        # stddev = jt.sqrt(stddev + 1e-8)
+        stddev = stddev - stddev.mean(0,keepdim=True)
+        stddev = stddev.square()
+        stddev = stddev.sum(0) / stddev.shape[0]
         stddev = jt.sqrt(stddev + 1e-8)
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
