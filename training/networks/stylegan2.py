@@ -638,7 +638,7 @@ class Discriminator(jt.nn.Module):
         channels = {
             4: 512,
             8: 512,
-            16: 512,
+            16: 512, 
             32: 512,
             64: 256 * channel_multiplier,
             128: 128 * channel_multiplier,
@@ -680,6 +680,7 @@ class Discriminator(jt.nn.Module):
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
         # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
+        print(stddev.shape)
         stddev = stddev.numpy()
         stddev = jt.array(stddev.var(0))
         stddev = jt.sqrt(stddev + 1e-8)
