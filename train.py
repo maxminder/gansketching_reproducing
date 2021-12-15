@@ -20,6 +20,9 @@ def training_loop():
     # if not opt.disable_eval:
     #     mp.set_start_method('spawn')    #存疑
     # mp.set_start_method('spawn')
+    print(opt.disable_eval)
+    if not opt.disable_eval:
+        mp.set_start_method('spawn')   
     print(mp.get_start_method())
 
     print("dataloader for user sketches")
@@ -54,16 +57,12 @@ def training_loop():
     for epoch in range(opt.max_epoch):
         iter_data_time = time.time()    # timer for data loading per iteration
         epoch_iter = 0                  # the number of training iterations in current epoch, reset to 0 every epoch
-        print('dataloader_sketch')
-        print(enumerate(dataloader_sketch))
-        for i, data_sketch in enumerate(dataloader_sketch):  # inner loop within one epoch
+        for i, data_sketch in dataloader_sketch:  # inner loop within one epoch
             if total_iters >= opt.max_iter:
                 return
 
             # makes dictionary to store all inputs
             data = {}
-            print('data_sketch')
-            print(data_sketch)
             data['sketch'] = data_sketch
             if opt.dataroot_image is not None:
                 data_image = next(data_yield_image)
@@ -76,6 +75,7 @@ def training_loop():
 
             # timer for optimization per iteration
             optimize_start_time = time.time()
+            print('Training at iter :', total_iters)
             trainer.train_one_step(data, total_iters)
             optimize_time = (time.time() - optimize_start_time) * 0.005 + 0.995 * optimize_time
 
