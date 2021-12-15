@@ -683,7 +683,7 @@ class Discriminator(jt.nn.Module):
         # stddev = stddev.numpy()
         # stddev = jt.array(stddev.var(0))
         # stddev = jt.sqrt(stddev + 1e-8)
-        stddev = stddev - stddev.mean(0,keepdim=True)
+        stddev = stddev - stddev.mean(0,keepdims=True)
         stddev = stddev.square()
         stddev = stddev.sum(0) / stddev.shape[0]
         stddev = jt.sqrt(stddev + 1e-8)
