@@ -215,7 +215,6 @@ class GANModel(jt.nn.Module):
 
         # Transform G's output to sketches to apply sketch loss
         fake_transf = self.tf_fake(fake_image)
-        print(fake_transf.requires_grad)
         real_transf = self.tf_real(real_sketch)
         pred_fake = self.netD_sketch(fake_transf)
         pred_real = self.netD_sketch(real_transf)

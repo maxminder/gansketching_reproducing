@@ -36,6 +36,7 @@ class Upsample(jt.nn.Module):
         kernel = make_kernel(kernel) * (factor ** 2)
         # self.register_buffer("kernel", kernel)
         self.kernel = kernel
+        self.kernel.requires_grad = False
         print(self.kernel.requires_grad)
         p = kernel.shape[0] - factor
 
@@ -58,6 +59,7 @@ class Downsample(jt.nn.Module):
         kernel = make_kernel(kernel)
         # self.register_buffer("kernel", kernel)
         self.kernel = kernel
+        self.kernel.requires_grad = False
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2
@@ -82,6 +84,7 @@ class Blur(jt.nn.Module):
 
         #self.register_buffer("kernel", kernel)
         self.kernel = kernel
+        self.kernel.requires_grad = False
         self.pad = pad
 
     def execute(self, input):
@@ -443,7 +446,7 @@ class Generator(jt.nn.Module):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]
             # self.noises.register_buffer(f"noise_{layer_idx}", torch.randn(*shape))
-            setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape))
+            setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape,requires_grad=False))
 
         for i in range(3, self.log_size + 1):
             out_channel = self.channels[2 ** i]
