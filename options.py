@@ -56,7 +56,7 @@ def get_opt():
 
     parser.add_argument("--transform_real", type=str, default='to3ch', help="sequence of operations to transform the real sketches before D")
     parser.add_argument("--transform_fake", type=str, default='toSketch,to3ch', help="sequence of operations to transform the fake images before D")
-    parser.add_argument("--photosketch_path", type=str, default='~/jittor/gansketching_reproducing/pretrained/photosketch.pth', help="path to the photosketch pre-trained model")
+    parser.add_argument("--photosketch_path", type=str, default=f'/root/jittor/gansketching_reproducing/pretrained/photosketch.pth', help="path to the photosketch pre-trained model")
     parser.add_argument("--diffaug_policy", type=str, default='', help='sequence of operations used for differentiable augmentation')
 
     opt = parser.parse_args()
