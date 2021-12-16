@@ -110,8 +110,8 @@ def training_loop():
             total_iters += 1
             epoch_iter += 1
             iter_data_time = time.time()
-            jittor.sync_all()
-            jittor.display_memory_info()
+            jt.sync_all()
+            jt.display_memory_info()
 
 
 if __name__ == "__main__":
