@@ -105,11 +105,13 @@ def training_loop():
                 metrics_time = time.time() - metrics_start_time
 
                 visualizer.print_current_metrics(epoch, total_iters, metrics, metrics_time)
-                visualizer.plot_current_errors(metrics, total_iters)
+                visualizer.plot_current_errors(metrics, total_iters)    
 
             total_iters += 1
             epoch_iter += 1
             iter_data_time = time.time()
+            jittor.sync_all()
+            jittor.display_memory_info()
 
 
 if __name__ == "__main__":
