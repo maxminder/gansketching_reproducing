@@ -177,7 +177,7 @@ class GANModel(jt.nn.Module):
     # |data|: dictionary of the input data
     def preprocess_input(self, data):
         # move to GPU and change data types
-        # data['noise'] = data.get('noise', None)
+        data['image'] = data.get('image', None)
         # data['image'] = data.get('image', None)
         # if self.use_gpu():
         #     data['sketch'] = data['sketch'].cuda()

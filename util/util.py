@@ -2,6 +2,7 @@ import os
 import cv2
 import numpy as np
 from PIL import Image
+import jittor as jt
 
 
 def clip_image_size(img, max_size=1024):
@@ -58,6 +59,8 @@ def tensor2im(image_tensor, imtype=np.uint8, normalize=(-1, 1), tile=False):
 
     if image_tensor.ndim == 2:
         image_tensor = image_tensor.unsqueeze(0)
+    # image_numpy = image_tensor.detach().float().numpy()
+    print(jt.flags.use_cuda)
     image_numpy = image_tensor.detach().float().numpy()
     if normalize is None:
         image_numpy = np.transpose(image_numpy, (1, 2, 0)) * 255.0

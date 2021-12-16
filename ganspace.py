@@ -7,6 +7,7 @@ import random
 import numpy as np
 from PIL import Image
 from training.networks.stylegan2 import Generator
+jt.flags.use_cuda = jt.has_cuda
 
 def gen_principal_components(dump_name):
     'Get principle components from GANSpace.'

@@ -244,14 +244,24 @@ class ModulatedConv2d(jt.nn.Module):
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
             # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            input = jt.misc.split(input,in_channel,dim=1)
-            weight = jt.misc.split(weight,in_channel,dim=0)
-            result =  []
-            for i in range(len(input)):
-                result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
+            # print(input.shape)
+            # input = jt.misc.split(input,in_channel,dim=1)
+            # weight = jt.misc.split(weight,in_channel,dim=0)
+            # result =  []
+            # for i in range(len(input)):
+            #     result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
             #out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            out = jt.concat(result,dim=1)
+            # out = jt.concat(result,dim=1)
+            out = jt.cudnn.ops.cudnn_conv_backward_x(
+                weight, input,
+                height = input.shape[2] * 2 + 1, width = input.shape[3] * 2 + 1,
+                strideh = 2, stridew=2,
+                paddingh = 0, paddingw = 0,
+                dilationh = 1, dilationw = 1,
+                groups = batch
+            )
             _, _, height, width = out.shape
+
             out = out.view(batch, self.out_channel, height, width)
             out = self.blur(out)
 
@@ -638,7 +648,7 @@ class Discriminator(jt.nn.Module):
         channels = {
             4: 512,
             8: 512,
-            16: 512,
+            16: 512, 
             32: 512,
             64: 256 * channel_multiplier,
             128: 128 * channel_multiplier,
@@ -680,9 +690,14 @@ class Discriminator(jt.nn.Module):
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
         # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        stddev = np.array(stddev)
-        stddev = jt.float32(stddev.var(0))
+        print(stddev.shape)
+        stddev = stddev.numpy()
+        stddev = jt.array(stddev.var(0))
         stddev = jt.sqrt(stddev + 1e-8)
+        # stddev = stddev - stddev.mean(0,keepdims=True)
+        # stddev = stddev.sqr()
+        # stddev = stddev.sum(0) / stddev.shape[0]
+        # stddev = jt.sqrt(stddev + 1e-8)
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = jt.concat([out, stddev], 1)
