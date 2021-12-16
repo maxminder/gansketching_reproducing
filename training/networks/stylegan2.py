@@ -244,16 +244,23 @@ class ModulatedConv2d(jt.nn.Module):
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
             # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            print(input.shape)
-            input = jt.misc.split(input,in_channel,dim=1)
-            weight = jt.misc.split(weight,in_channel,dim=0)
-            result =  []
-            for i in range(len(input)):
-                result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
+            # print(input.shape)
+            # input = jt.misc.split(input,in_channel,dim=1)
+            # weight = jt.misc.split(weight,in_channel,dim=0)
+            # result =  []
+            # for i in range(len(input)):
+            #     result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
             #out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            out = jt.concat(result,dim=1)
+            # out = jt.concat(result,dim=1)
+            out = jt.cudnn.ops.cudnn_conv_backward_x(
+                weight, input,
+                height = input.shape[2] * 2 + 1, width = input.shape[3] * 2 + 1,
+                strideh = 2, stridew=2,
+                paddingh = 0, paddingw = 0,
+                dilationh = 1, dilationw = 1,
+                groups = batch
+            )
             _, _, height, width = out.shape
-            print(height,width)
 
             out = out.view(batch, self.out_channel, height, width)
             out = self.blur(out)
