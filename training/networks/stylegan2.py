@@ -36,6 +36,7 @@ class Upsample(jt.nn.Module):
         kernel = make_kernel(kernel) * (factor ** 2)
         # self.register_buffer("kernel", kernel)
         self.kernel = kernel
+        print(self.kernel.requires_grad)
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2 + factor - 1
@@ -690,7 +691,6 @@ class Discriminator(jt.nn.Module):
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
         # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        print(stddev.shape)
         stddev = stddev.numpy()
         stddev = jt.array(stddev.var(0))
         stddev = jt.sqrt(stddev + 1e-8)
