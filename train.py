@@ -70,10 +70,6 @@ def training_loop():
                 data_image = next(data_yield_image)
                 data['image'] = data_image
 
-            
-            jt.sync_all()
-            jt.display_memory_info()
-
             # timer for data loading per iteration
             iter_start_time = time.time()
             if total_iters % opt.print_freq == 0:

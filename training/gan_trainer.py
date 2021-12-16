@@ -77,11 +77,15 @@ class GANTrainer():
 
     def train_one_step(self, data, iters):
         self.gan_model.set_requires_grad(False, True)
+        jt.sync_all()
+        jt.display_memory_info()
         self.run_discriminator_one_step(data)
         if not self.opt.no_d_regularize and iters % self.opt.d_reg_every == 0:
             self.run_discriminator_regularization_one_step(data)
 
         self.gan_model.set_requires_grad(True, False)
+        jt.sync_all()
+        jt.display_memory_info()
         self.run_generator_one_step(data)
 
     def get_latest_losses(self):
