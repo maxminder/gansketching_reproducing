@@ -9,7 +9,7 @@ import jittor as jt
 from training.networks.stylegan2 import Generator
 from PIL import Image
 import math
-
+jt.flags.use_cuda = jt.has_cuda
 
 def save_image_pytorch(img, name):
     """Helper function to save torch tensor into an image file."""
