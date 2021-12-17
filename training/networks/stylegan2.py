@@ -254,7 +254,7 @@ class ModulatedConv2d(jt.nn.Module):
             result =  []
             for i in range(len(input)):
                 result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
-            out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
+            # out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
             out = jt.concat(result,dim=1)
             # out = jt.cudnn.ops.cudnn_conv_backward_x(
             #     weight, input,
