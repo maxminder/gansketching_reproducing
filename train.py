@@ -62,7 +62,8 @@ def training_loop():
         for i, data_sketch in dataloader_sketch:  # inner loop within one epoch
             if total_iters >= opt.max_iter:
                 return
-
+            jt.sync_all()
+            jt.display_memory_info()
             # makes dictionary to store all inputs
             data = {}
             data['sketch'] = data_sketch
