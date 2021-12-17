@@ -681,8 +681,7 @@ class Discriminator(jt.nn.Module):
         self.stddev_feat = 1
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
-        for i in self.final_conv:
-            print('conv',len(i.parameters()))
+        print('conv',len(self.final_conv.parameters()))
         self.final_linear = jt.nn.Sequential(
             EqualLinear(channels[4] * 4 * 4, channels[4], activation="fused_lrelu"),
             EqualLinear(channels[4], 1),
