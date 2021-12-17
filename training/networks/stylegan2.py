@@ -662,7 +662,6 @@ class Discriminator(jt.nn.Module):
         }
 
         convs = [ConvLayer(3, channels[size], 1)]
-
         log_size = int(math.log(size, 2))
 
         in_channel = channels[size]
@@ -675,15 +674,20 @@ class Discriminator(jt.nn.Module):
             in_channel = out_channel
 
         self.convs = jt.nn.Sequential(*convs)
+        for i in convs:
+            print('conv',len(i.parameters()))
 
         self.stddev_group = 4
         self.stddev_feat = 1
 
         self.final_conv = ConvLayer(in_channel + 1, channels[4], 3)
+        for i in self.final_conv:
+            print('conv',len(i.parameters()))
         self.final_linear = jt.nn.Sequential(
             EqualLinear(channels[4] * 4 * 4, channels[4], activation="fused_lrelu"),
             EqualLinear(channels[4], 1),
         )
+        print('linear',len(self.final_linear.parameters()))
 
     def execute(self, input):
         out = self.convs(input)
