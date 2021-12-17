@@ -629,9 +629,9 @@ class ResBlock(jt.nn.Module):
         super().__init__()
 
         self.conv1 = ConvLayer(in_channel, in_channel, 3)
-        print(len(self.conv1.parameters()))
+        print('conv111',len(self.conv1.parameters()))
         self.conv2 = ConvLayer(in_channel, out_channel, 3, downsample=True)
-        print(len(self.conv2.parameters()))
+        print('conv222',len(self.conv2.parameters()))
         self.skip = ConvLayer(
             in_channel, out_channel, 1, downsample=True, activate=False, bias=False
         )
