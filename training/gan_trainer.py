@@ -17,7 +17,7 @@ class GANTrainer():
         self.device = 'cuda' if not self.opt.use_cpu else 'cpu'
 
         self.gan_model = GANModel(opt)
-        print(len(self.gan_model.parameters()))
+        print('gan_model',len(self.gan_model.parameters()))
 
         self.generated = None
         if opt.isTrain:
