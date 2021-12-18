@@ -448,7 +448,7 @@ class Generator(jt.nn.Module):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]
             # self.noises.register_buffer(f"noise_{layer_idx}", torch.randn(*shape))
-            setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape,requires_grad=False))
+            setattr(self.noises,f"_noise_{layer_idx}",jt.randn(*shape,requires_grad=False))
 
         for i in range(3, self.log_size + 1):
             out_channel = self.channels[2 ** i]
@@ -515,7 +515,7 @@ class Generator(jt.nn.Module):
                 noise = [None] * self.num_layers
             else:
                 noise = [
-                    getattr(self.noises, f"noise_{i}") for i in range(self.num_layers)
+                    getattr(self.noises, f"_noise_{i}") for i in range(self.num_layers)
                 ]
 
         if truncation < 1:
