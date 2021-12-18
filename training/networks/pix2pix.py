@@ -91,7 +91,6 @@ def get_scheduler(optimizer, opt):
             lr_l = 1.0 - max(0, epoch + 1 + opt.epoch_count - opt.niter) / float(opt.niter_decay + 1)
             return lr_l
         scheduler = jt.optim.LambdaLR(optimizer, lr_lambda=lambda_rule)
-        return NotImplementedError('learning rate policy [%s] is not implemented', opt.lr_policy)
     elif opt.lr_policy == 'step':
         scheduler = jt.lr_scheduler.StepLR(optimizer, step_size=opt.lr_decay_iters, gamma=0.1)
     elif opt.lr_policy == 'plateau':
