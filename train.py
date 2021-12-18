@@ -111,6 +111,8 @@ def training_loop():
             total_iters += 1
             epoch_iter += 1
             iter_data_time = time.time()
+            jt.sync_all()
+            jt.gc()
 
 
 if __name__ == "__main__":
