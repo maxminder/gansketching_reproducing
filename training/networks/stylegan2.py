@@ -88,7 +88,6 @@ class Blur(jt.nn.Module):
         self.pad = pad
 
     def execute(self, input):
-        print('requires_grad',self.kernel.requires_grad)
         self.kernel.requires_grad = False
         out = upfirdn2d(input, self.kernel, pad=self.pad)
 

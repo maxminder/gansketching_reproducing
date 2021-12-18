@@ -17,7 +17,6 @@ class GANTrainer():
         self.device = 'cuda' if not self.opt.use_cpu else 'cpu'
 
         self.gan_model = GANModel(opt)
-        print('gan_model',len(self.gan_model.parameters()))
 
         self.generated = None
         if opt.isTrain:
@@ -35,6 +34,7 @@ class GANTrainer():
             self.interm_imgs = {}
             self.reports = {}
             self.set_fixed_noise(self.device)
+        print('gan_model',len(self.gan_model.parameters()))
 
     def run_generator_one_step(self, data):
         g_losses, generated = self.gan_model(data, mode='generator')

@@ -84,8 +84,7 @@ class GANModel(jt.nn.Module):
         if not opt.no_d_regularize:
             self.d_regularize = networks.RegularizeD()
 
-    def set_requires_grad(self, g_requires_grad=None, d_requires_grad=None):
-        
+    def set_requires_grad(self, g_requires_grad=None, d_requires_grad=None):      
         if g_requires_grad is not None:
             networks.set_requires_grad(self.G_params, g_requires_grad)
         if d_requires_grad is not None:
