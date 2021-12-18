@@ -77,6 +77,7 @@ __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, 
 
 void FusedBiasActOp::jit_run() {
     int curDevice = -1;
+    cudaGetDevice(&curDevice);
 
     auto x = input;
     auto b = bias;
