@@ -148,7 +148,7 @@ class EqualLinear(jt.nn.Module):
 
     def execute(self, input):
         if self.activation:
-            # out = F.linear(input, self.weight * self.scale)
+            print("151: type of input", str(type(input)))
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
@@ -483,6 +483,7 @@ class Generator(jt.nn.Module):
         latent_in = jt.randn(
             n_latent, self.style_dim
         )
+        print("486: type of latent_in", str(type(latent_in)))
         latent = self.style(latent_in).mean(0, keepdims=True)
 
         return latent
