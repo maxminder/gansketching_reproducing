@@ -133,11 +133,11 @@ class EqualLinear(jt.nn.Module):
     ):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
+        self.weight = jt.randn(out_dim, in_dim) / lr_mul
 
         if bias:
             # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
-            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
+            self.bias = jt.init.constant(out_dim,value=bias_init)
         else:
             self.bias = None
 
@@ -149,6 +149,7 @@ class EqualLinear(jt.nn.Module):
     def execute(self, input):
         if self.activation:
             print("151: type of input", str(type(input)))
+            print("151: type of input", str(type(self.weight*self.scale)))
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
