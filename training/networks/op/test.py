@@ -77,8 +77,6 @@ __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, 
 
 void FusedBiasActOp::jit_run() {
     int curDevice = -1;
-    cudaGetDevice(&curDevice);
-    cudaStream_t stream = getCurrentCUDAStream(curDevice);
 
     auto x = input;
     auto b = bias;
@@ -101,7 +99,7 @@ void FusedBiasActOp::jit_run() {
 
     auto y = new Var(x->shape, x->dtype());
 
-    kernel<<<grid_size, block_size, 0, stream>>>(
+    kernel<<<grid_size, block_size, 0>>>(
         y->ptr<float32>(),
         x->ptr<float32>(),
         b->ptr<float32>(),
