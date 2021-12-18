@@ -103,6 +103,7 @@ void FusedBiasActOp::jit_run() {
     float32* xp;
     float32* bp;
     float32* refp;
+    printf("%d", size_x);
     cudaMalloc(&yp, size_x * sizeof(float32));
     cudaMalloc(&xp, size_x * sizeof(float32));
     cudaMalloc(&bp, size_b * sizeof(float32));
