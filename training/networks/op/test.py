@@ -30,7 +30,7 @@ namespace jittor {
 FusedBiasActOp::FusedBiasActOp(Var* input, Var* bias, Var* refer, int act, int grad, double alpha, double scale) : input(input), bias(bias), refer(refer),act(act), grad(grad), alpha(alpha), scale(scale) {
     flags.set(NodeFlags::_cuda, 1);
     flags.set(NodeFlags::_cpu, 1);
-    output = create_output(input->shape, input->dtype());
+    output = create_output(input->shape, input->dtype);
 }
 
 
@@ -76,6 +76,7 @@ __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, 
 }
 
 void FusedBiasActOp::jit_run() {
+    output = new Var(input->shape, input->dtype());
 }
 #endif // JIT
 
@@ -119,5 +120,4 @@ bias = jt.Var([0.6415, 0.8838, 0.5172],)
 empty = jt.rand((0,), dtype=float)
 negative_slope = 0.2
 scale = 1.5
-
-op = fused_bias_act_op(input, bias, empty, 3, 1, negative_slope, scale)
+op = fused_bias_act_op(input, bias, empty, 3, 1, negative_slope, scale).fetch_sync()
