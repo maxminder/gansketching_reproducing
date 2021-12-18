@@ -10,7 +10,7 @@ from training.gan_trainer import GANTrainer
 from training.dataset import create_dataloader, yield_data
 
 jt.flags.use_cuda = jt.has_cuda
-
+jt.cudnn.set_max_workspace_ratio(0.0)
 
 def training_loop():
     #jt.backends.cudnn.benchmark = True
