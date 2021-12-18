@@ -91,8 +91,8 @@ void FusedBiasActOp::jit_run() {
     int size_b = b->numel();
     int step_b = 1;
 
-    for (int i = 1 + 1; i < x->ndim(); i++) {
-        step_b *= x->dsize(i);
+    for (int i = 1 + 1; i < x->shape.size(); i++) {
+        step_b *= x->shape[i];
     }
 
     int loop_x = 4;
@@ -102,10 +102,10 @@ void FusedBiasActOp::jit_run() {
     auto y = new Var(x->shape, x->dtype());
 
     kernel<<<grid_size, block_size, 0, stream>>>(
-        y->ptr(),
-        x->ptr(),
-        b->ptr(),
-        ref->ptr(),
+        y->ptr<float32>(),
+        x->ptr<float32>(),
+        b->ptr<float32>(),
+        ref->ptr<float32>(),
         act,
         grad,
         alpha,
