@@ -99,6 +99,7 @@ void FusedBiasActOp::jit_run() {
     int block_size = 4 * 32;
     int grid_size = (size_x - 1) / (loop_x * block_size) + 1;
 
+    float32* yp;
     float32* xp;
     float32* bp;
     float32* refp;
