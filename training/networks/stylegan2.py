@@ -149,7 +149,7 @@ class EqualLinear(jt.nn.Module):
     def execute(self, input):
         if self.activation:
             print("151: type of input", str(type(input)))
-            print("151: type of input", str(type(self.weight*self.scale)))
+            print("152: type of input", str(type(self.weight*self.scale)))
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
