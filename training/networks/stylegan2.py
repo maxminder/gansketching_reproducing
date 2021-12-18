@@ -152,6 +152,7 @@ class EqualLinear(jt.nn.Module):
             print("152: type of input", str(type(self.weight*self.scale)))
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
+            print("155: type of out", str(type(out)))
 
         else:
             # out = F.linear(
