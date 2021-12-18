@@ -1,16 +1,11 @@
 import os
 import jittor as jt
 
-module_path = os.path.dirname(__file__)
-src_file = open(os.path.join(module_path, "fused_bias_act_op.cc"), "r")
-src = src_file.read()
-src_file.close()
-header_file = open(os.path.join(module_path, "fused_bias_act_op.h"), "r")
-header = header_file.read()
-header_file.close()
 
+module_path = os.path.dirname(__file__)
+src = os.path.join(module_path, "fused_bias_act_op.cc")
+header = os.path.join(module_path, "fused_bias_act_op.h")
 fused = jt.compile_custom_ops((src, header))
-print(fused)
 
 
 class FusedLeakyReLUFunctionBackward(jt.Function):
@@ -22,7 +17,7 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
         empty = grad_output.new_empty(0)
 
-        grad_input = fused.fused_bias_act(
+        grad_input = fused(
             grad_output, empty, out, 3, 1, negative_slope, scale
         )
 
@@ -42,8 +37,7 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
     def backward(ctx, gradgrad_input, gradgrad_bias):
         out, = ctx.saved_tensors
-        #gradgrad_out = fused.fused_bias_act(
-        gradgrad_out = fused.fused_bias_act(
+        gradgrad_out = fused(
             gradgrad_input, gradgrad_bias, out, 3, 1, ctx.negative_slope, ctx.scale
         )
 
@@ -53,15 +47,13 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 class FusedLeakyReLUFunction(jt.Function):
     # @staticmethod
     def execute(self, input, bias, negative_slope, scale):
-        # empty = input.new_empty(0)
         empty = jt.randn((0))
         self.bias = bias is not None
 
         if bias is None:
             bias = empty
 
-        #out = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale)
-        out = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale)
+        out = fused(input, bias, empty, 3, 0, negative_slope, scale)
         self.save_for_backward(out)
         self.negative_slope = negative_slope
         self.scale = scale

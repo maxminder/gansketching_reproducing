@@ -103,12 +103,10 @@ void FusedBiasActOp::jit_run() {
     float32* xp;
     float32* bp;
     float32* refp;
-    printf("%d", size_x);
     cudaMalloc(&yp, size_x * sizeof(float32));
     cudaMalloc(&xp, size_x * sizeof(float32));
     cudaMalloc(&bp, size_b * sizeof(float32));
     cudaMalloc(&refp, size_ref * sizeof(float32));
-    cudaMemcpy(yp, output->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(bp, b->ptr<float32>(), size_b * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(refp, ref->ptr<float32>(), size_ref * sizeof(float32), cudaMemcpyDefault);
@@ -171,11 +169,11 @@ input = jt.Var([[[[4.1289e-01, 8.6104e-01, 4.1847e-01, 4.8154e-01, 5.4599e-01],
          [[3.9402e-01, 8.3073e-01, 7.9441e-01, 6.4661e-01, 4.8639e-01],
           [6.7884e-01, 9.6930e-01, 2.1589e-01, 3.4418e-01, 9.2157e-01],
           [9.7674e-01, 7.9746e-01, 5.7921e-01, 5.2418e-02, 9.6114e-01],
-          [8.7905e-01, 8.9969e-01, 1.8315e-01, 8.4478e-01, 7.6681e-01]]]], dtype=jt.float)
+          [8.7905e-01, 8.9969e-01, 1.8315e-01, 8.4478e-01, 7.6681e-01]]]],)
 
-bias = jt.Var([0.6415, 0.8838, 0.5172], dtype=jt.float)
-empty = jt.rand((0,), dtype=jt.float)
+bias = jt.Var([0.6415, 0.8838, 0.5172],)
+empty = jt.rand((0,), dtype=float)
 negative_slope = 0.2
 scale = 1.5
-out = fused_bias_act_op(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
+out = fused_bias_act_op(input, bias, empty, 3, 1, negative_slope, scale).fetch_sync()
 print(out)

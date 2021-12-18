@@ -1,13 +1,16 @@
 #include "var.h"
 #include "fused_bias_act_op.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 namespace jittor {
 #ifndef JIT
-FusedBiasActOp::FusedBiasActOp(Var* input, Var* bias, Var* refer,int act, int grad, double alpha, double scale): input(input), bias(bias), refer(refer),act(act), grad(grad), alpha(alpha), scale(scale){
+FusedBiasActOp::FusedBiasActOp(Var* input, Var* bias, Var* refer, int act, int grad, double alpha, double scale) : input(input), bias(bias), refer(refer),act(act), grad(grad), alpha(alpha), scale(scale) {
     flags.set(NodeFlags::_cuda, 1);
     flags.set(NodeFlags::_cpu, 1);
     output = create_output(input->shape, input->dtype());
 }
+
 
 void FusedBiasActOp::jit_prepare(JK& jk) {
     jk << _CS("[To:") << output->dtype();
@@ -17,7 +20,7 @@ void FusedBiasActOp::jit_prepare(JK& jk) {
 }
 
 #else // JIT
-JIT_cuda
+
 template <typename scalar_t>
 __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, const scalar_t* p_ref, int act, int grad, scalar_t alpha, scalar_t scale, int loop_x, int size_x, int step_b, int size_b, int use_bias, int use_ref) {
     int xi = blockIdx.x * loop_x * blockDim.x + threadIdx.x;
@@ -51,14 +54,6 @@ __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, 
 }
 
 void FusedBiasActOp::jit_run() {
-    auto* __restrict__ output = output->ptr<To>();
-    auto* __restrict__ input = input->ptr<Ti>();
-    auto* __restrict__ bias = bias->ptr<Tb>();
-    auto* __restrict__ refer = refer->ptr<Tr>();
-
-    int curDevice = -1;
-    cudaGetDevice(&curDevice);
-    cudaStream_t stream = at::cuda::getCurrentCUDAStream(curDevice);
 
     auto x = input;
     auto b = bias;
@@ -69,42 +64,34 @@ void FusedBiasActOp::jit_run() {
 
     int size_x = x->numel();
     int size_b = b->numel();
+    int size_ref = ref->numel();
     int step_b = 1;
 
-    for (int i = 1 + 1; i < x->ndim(); i++) {
-        step_b *= x->dsize(i);
+    for (int i = 1 + 1; i < x->shape.size(); i++) {
+        step_b *= x->shape[i];
     }
 
     int loop_x = 4;
     int block_size = 4 * 32;
     int grid_size = (size_x - 1) / (loop_x * block_size) + 1;
 
-    auto y = new Var(x->shape, x->dtype());
+    float32* yp;
+    float32* xp;
+    float32* bp;
+    float32* refp;
+    cudaMalloc(&yp, size_x * sizeof(float32));
+    cudaMalloc(&xp, size_x * sizeof(float32));
+    cudaMalloc(&bp, size_b * sizeof(float32));
+    cudaMalloc(&refp, size_ref * sizeof(float32));
+    cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
+    cudaMemcpy(bp, b->ptr<float32>(), size_b * sizeof(float32), cudaMemcpyDefault);
+    cudaMemcpy(refp, ref->ptr<float32>(), size_ref * sizeof(float32), cudaMemcpyDefault);
 
-    // AT_DISPATCH_FLOATING_TYPES_AND_HALF(x.scalar_type(), "fused_bias_act_kernel", [&] {
-    //     kernel<scalar_t><<<grid_size, block_size, 0, stream>>>(
-    //         y->ptr<scalar_t>(),
-    //         x->ptr<scalar_t>(),
-    //         b->ptr<scalar_t>(),
-    //         ref->ptr<scalar_t>(),
-    //         act,
-    //         grad,
-    //         alpha,
-    //         scale,
-    //         loop_x,
-    //         size_x,
-    //         step_b,
-    //         size_b,
-    //         use_bias,
-    //         use_ref
-    //     );
-    // });
-
-    kernel<<<grid_size, block_size, 0, stream>>>(
-        y->ptr(),
-        x->ptr(),
-        b->ptr(),
-        ref->ptr(),
+    kernel<<<grid_size, block_size>>>(
+        yp,
+        xp,
+        bp,
+        refp,
         act,
         grad,
         alpha,
@@ -117,7 +104,7 @@ void FusedBiasActOp::jit_run() {
         use_ref
     );
 
-    output = y;
+    cudaMemcpy(output->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
 
 }
 #endif // JIT
