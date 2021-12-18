@@ -122,4 +122,5 @@ bias = jt.Var([0.6415, 0.8838, 0.5172],)
 empty = jt.rand((0,), dtype=float)
 negative_slope = 0.2
 scale = 1.5
-op = fused_bias_act_op(input, bias, empty, 3, 1, negative_slope, scale).fetch_sync()
+out = fused_bias_act_op(input, bias, empty, 3, 1, negative_slope, scale).fetch_sync()
+print(out)
