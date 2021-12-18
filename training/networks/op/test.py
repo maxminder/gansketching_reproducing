@@ -24,8 +24,6 @@ struct FusedBiasActOp : Op {
 src = """
 #include "var.h"
 #include "fused_bias_act_op.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
 
 namespace jittor {
 #ifndef JIT
@@ -100,11 +98,16 @@ void FusedBiasActOp::jit_run() {
 
     auto y = new Var(x->shape, x->dtype());
 
+    auto* __restrict__ yp = y->ptr<float32>();
+    auto* __restrict__ xp = x->ptr<float32>();
+    auto* __restrict__ bp = b->ptr<float32>();
+    auto* __restrict__ refp = ref->ptr<float32>();
+
     kernel<<<grid_size, block_size>>>(
-        y->ptr<float32>(),
-        x->ptr<float32>(),
-        b->ptr<float32>(),
-        ref->ptr<float32>(),
+        yp,
+        xp,
+        bp,
+        refp,
         act,
         grad,
         alpha,
