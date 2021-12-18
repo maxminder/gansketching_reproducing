@@ -129,7 +129,6 @@ void FusedBiasActOp::jit_run() {
     );
 
     cudaMemcpy(output->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
-    output = y;
 
 }
 #endif // JIT
