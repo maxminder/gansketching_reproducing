@@ -17,6 +17,7 @@ def training_loop():
 
     opt, parser = get_opt()
     opt.isTrain = True
+    
 
     # needs to switch to spawn mode to be compatible with evaluation
     # if not opt.disable_eval:
@@ -61,7 +62,8 @@ def training_loop():
         for i, data_sketch in dataloader_sketch:  # inner loop within one epoch
             if total_iters >= opt.max_iter:
                 return
-
+            jt.sync_all()
+            jt.display_memory_info()
             # makes dictionary to store all inputs
             data = {}
             data['sketch'] = data_sketch
