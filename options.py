@@ -22,7 +22,7 @@ def get_opt():
     parser.add_argument("--save_freq", type=int, default=2500, help="frequency to save model checkpoints")
     parser.add_argument("--eval_freq", type=int, default=5000, help="frequency to evaluate current results")
     parser.add_argument("--disable_eval", action="store_true", help="use this flag to disable evaluation during training")
-    parser.add_argument("--eval_batch", type=int, default=20, help="batch size used to generate images for evaluation")
+    parser.add_argument("--eval_batch", type=int, default=50, help="batch size used to generate images for evaluation")
     parser.add_argument("--reduce_visuals", action="store_true", help="use this flag to reduce amount of visualization (useful in the FFHQ case to reduce memory usage)")
     parser.add_argument("--latent_avg_samples", type=int, default=8192, help="number of samples used to calculate mean latent for truncation")
 

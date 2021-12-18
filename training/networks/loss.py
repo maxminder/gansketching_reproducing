@@ -101,9 +101,6 @@ class RegularizeD(jt.nn.Module):
         # in case of patchGAN, take average of per-pixel predictions, and sum over batches
         outputs = real_pred.reshape(real_pred.shape[0], -1).mean(1).sum()
         grad_real = jt.grad(outputs, real_img)   #存疑
-        # grad_real, = autograd.grad(
-        #     outputs=outputs, inputs=real_img, create_graph=True
-        # )
         grad_penalty = grad_real.pow(2).reshape(grad_real.shape[0], -1).sum(1).mean()
 
         return grad_penalty

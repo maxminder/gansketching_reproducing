@@ -37,7 +37,6 @@ class Upsample(jt.nn.Module):
         # self.register_buffer("kernel", kernel)
         self.kernel = kernel
         self.kernel.requires_grad = False
-        print(self.kernel.requires_grad)
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2 + factor - 1
