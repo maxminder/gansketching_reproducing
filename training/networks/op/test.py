@@ -24,8 +24,6 @@ struct FusedBiasActOp : Op {
 src = """
 #include "var.h"
 #include "fused_bias_act_op.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
 
 namespace jittor {
 #ifndef JIT
@@ -84,6 +82,8 @@ void FusedBiasActOp::jit_run() {
 
 } // jittor
 """
+if jt.compiler.has_cuda:
+    jt.flags.use_cuda = 1
 
 fused_bias_act_op = jt.compile_custom_op(header, src, "fused_bias_act", warp=False)
 
