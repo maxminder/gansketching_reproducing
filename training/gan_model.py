@@ -29,10 +29,6 @@ class GANModel(jt.nn.Module):
         # transform modules to convert generator output to sketches, etc.
         self.tf_real = OutputTransform(opt, process=opt.transform_real, diffaug_policy=opt.diffaug_policy)
         self.tf_fake = OutputTransform(opt, process=opt.transform_fake, diffaug_policy=opt.diffaug_policy)
-        print('G_param',len(self.netG.parameters()))
-        print('D_param',len(self.netD_image.parameters())+len(self.netD_sketch.parameters()))
-        print('tf_real',len(self.tf_real.parameters()))
-        print('tf_fake',len(self.tf_fake.parameters()))
 
     # Entry point for all calls involving forward pass of deep networks.
     def execute(self, data, mode):
