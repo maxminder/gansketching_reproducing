@@ -1,7 +1,5 @@
 import os
 import jittor as jt
-
-
 module_path = os.path.dirname(__file__)
 src = os.path.join(module_path, "fused_bias_act_op.cc")
 header = os.path.join(module_path, "fused_bias_act_op.h")
@@ -17,9 +15,9 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
         empty = grad_output.new_empty(0)
 
-        grad_input = fused(
+        grad_input = fused.fused_bias_act(
             grad_output, empty, out, 3, 1, negative_slope, scale
-        )
+        ).fetch_sync()
 
         dim = [0]
 
@@ -37,9 +35,9 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
     def backward(ctx, gradgrad_input, gradgrad_bias):
         out, = ctx.saved_tensors
-        gradgrad_out = fused(
+        gradgrad_out = fused.fused_bias_act(
             gradgrad_input, gradgrad_bias, out, 3, 1, ctx.negative_slope, ctx.scale
-        )
+        ).fetch_sync()
 
         return gradgrad_out, None, None, None, None
 
@@ -53,7 +51,7 @@ class FusedLeakyReLUFunction(jt.Function):
         if bias is None:
             bias = empty
 
-        out = fused(input, bias, empty, 3, 0, negative_slope, scale)
+        out = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
         self.save_for_backward(out)
         self.negative_slope = negative_slope
         self.scale = scale
@@ -92,14 +90,5 @@ class FusedLeakyReLU(jt.Module):
 
 
 def fused_leaky_relu(input, bias=None, negative_slope=0.2, scale=2 ** 0.5):
-    # if input.device.type == "cpu":
-    #     if bias is not None:
-    #         rest_dim = [1] * (input.ndim - bias.ndim - 1)
-    #         return jt.nn.leaky_relu(input + bias.view(1, bias.shape[0], *rest_dim), scale=0.2) * scale
-
-    #     else:
-    #         return jt.nn.leaky_relu(input, scale=0.2) * scale
-
-    # else:
     jt.flags.use_cuda = 1
     return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)
