@@ -75,7 +75,7 @@ class FusedLeakyReLU(jt.Module):
         super().__init__()
 
         if bias:
-            self.bias = jt.nn.Parameter(jt.zeros(channel))
+            self.bias = jt.zeros(channel)
 
         else:
             self.bias = None
@@ -88,5 +88,6 @@ class FusedLeakyReLU(jt.Module):
 
 
 def fused_leaky_relu(input, bias=None, negative_slope=0.2, scale=2 ** 0.5):
-    jt.flags.use_cuda = 1
+    if jt.has_cuda and jt.flags.use_cuda == 0:
+        jt.flags.use_cuda = 1
     return FusedLeakyReLUFunction.apply(input, bias, negative_slope, scale)

@@ -95,16 +95,14 @@ class EqualConv2d(jt.nn.Module):
     ):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(
-            jt.randn(out_channel, in_channel, kernel_size, kernel_size)
-        )
+        self.weight = jt.randn(out_channel, in_channel, kernel_size, kernel_size)
         self.scale = 1 / math.sqrt(in_channel * kernel_size ** 2)
 
         self.stride = stride
         self.padding = padding
 
         if bias:
-            self.bias = jt.nn.Parameter(jt.zeros(out_channel))
+            self.bias = jt.zeros(out_channel)
 
         else:
             self.bias = None
@@ -136,7 +134,6 @@ class EqualLinear(jt.nn.Module):
         self.weight = jt.randn(out_dim, in_dim) / lr_mul
 
         if bias:
-            # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
             self.bias = jt.init.constant(out_dim,value=bias_init)
         else:
             self.bias = None
@@ -148,11 +145,8 @@ class EqualLinear(jt.nn.Module):
 
     def execute(self, input):
         if self.activation:
-            print("151: type of input", str(type(input)))
-            print("152: type of input", str(type(self.weight*self.scale)))
             out = jt.nn.matmul_transpose(input, self.weight*self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
-            print("155: type of out", str(type(out)))
 
         else:
             # out = F.linear(
@@ -209,9 +203,7 @@ class ModulatedConv2d(jt.nn.Module):
         self.scale = 1 / math.sqrt(fan_in)
         self.padding = kernel_size // 2
 
-        self.weight = jt.nn.Parameter(
-            jt.randn(1, out_channel, in_channel, kernel_size, kernel_size)
-        )
+        self.weight = jt.randn(1, out_channel, in_channel, kernel_size, kernel_size)
 
         self.modulation = EqualLinear(style_dim, in_channel, bias_init=1)
 
@@ -245,15 +237,6 @@ class ModulatedConv2d(jt.nn.Module):
             weight = weight.transpose(1, 2).reshape(
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
-            # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            # print(input.shape)
-            # input = jt.misc.split(input,in_channel,dim=1)
-            # weight = jt.misc.split(weight,in_channel,dim=0)
-            # result =  []
-            # for i in range(len(input)):
-            #     result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
-            #out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            # out = jt.concat(result,dim=1)
             out = jt.cudnn.ops.cudnn_conv_backward_x(
                 weight, input,
                 height = input.shape[2] * 2 + 1, width = input.shape[3] * 2 + 1,
@@ -288,7 +271,7 @@ class NoiseInjection(jt.nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(jt.zeros(1))
+        self.weight = jt.zeros(1)
 
     def execute(self, image, noise=None):
         if noise is None:
@@ -303,7 +286,7 @@ class ConstantInput(jt.nn.Module):
     def __init__(self, channel, size=4):
         super().__init__()
 
-        self.input = jt.nn.Parameter(jt.randn(1, channel, size, size))
+        self.input = jt.randn(1, channel, size, size)
 
     def execute(self, input):
         batch = input.shape[0]
@@ -315,7 +298,7 @@ class ConstantInput(jt.nn.Module):
 class WShift(jt.nn.Module):
     def __init__(self, style_dim):
         super().__init__()
-        self.w_shift = jt.nn.Parameter(jt.zeros(1, style_dim))
+        self.w_shift = jt.zeros(1, style_dim)
 
     def exxecute(self, input):
         out = input + self.w_shift
@@ -346,14 +329,11 @@ class StyledConv(jt.nn.Module):
         )
 
         self.noise = NoiseInjection()
-        # self.bias = nn.Parameter(torch.zeros(1, out_channel, 1, 1))
-        # self.activate = ScaledLeakyReLU(0.2)
         self.activate = FusedLeakyReLU(out_channel)
 
     def execute(self, input, style, noise=None):
         out = self.conv(input, style)
         out = self.noise(out, noise=noise)
-        # out = out + self.bias
         out = self.activate(out)
 
         return out
@@ -367,7 +347,7 @@ class ToRGB(jt.nn.Module):
             self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
-        self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
+        self.bias = jt.zeros((1, 3, 1, 1))
 
     def execute(self, input, style, skip=None):
         out = self.conv(input, style)
@@ -485,7 +465,6 @@ class Generator(jt.nn.Module):
         latent_in = jt.randn(
             n_latent, self.style_dim
         )
-        print("486: type of latent_in", str(type(latent_in)))
         latent = self.style(latent_in).mean(0, keepdims=True)
 
         return latent
@@ -692,15 +671,9 @@ class Discriminator(jt.nn.Module):
         stddev = out.view(
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
-        # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        print(stddev.shape)
         stddev = stddev.numpy()
         stddev = jt.array(stddev.var(0))
         stddev = jt.sqrt(stddev + 1e-8)
-        # stddev = stddev - stddev.mean(0,keepdims=True)
-        # stddev = stddev.sqr()
-        # stddev = stddev.sum(0) / stddev.shape[0]
-        # stddev = jt.sqrt(stddev + 1e-8)
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = jt.concat([out, stddev], 1)

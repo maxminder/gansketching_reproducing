@@ -79,10 +79,10 @@ void FusedBiasActOp::jit_run() {
     float32* xp;
     float32* bp;
     float32* refp;
-    cudaMalloc(&yp, size_x * sizeof(float32));
-    cudaMalloc(&xp, size_x * sizeof(float32));
-    cudaMalloc(&bp, size_b * sizeof(float32));
-    cudaMalloc(&refp, size_ref * sizeof(float32));
+    cudaMalloc((void**)&yp, size_x * sizeof(float32));
+    cudaMalloc((void**)&xp, size_x * sizeof(float32));
+    cudaMalloc((void**)&bp, size_b * sizeof(float32));
+    cudaMalloc((void**)&refp, size_ref * sizeof(float32));
     cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(bp, b->ptr<float32>(), size_b * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(refp, ref->ptr<float32>(), size_ref * sizeof(float32), cudaMemcpyDefault);
@@ -105,7 +105,10 @@ void FusedBiasActOp::jit_run() {
     );
 
     cudaMemcpy(output->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
-
+    cudaFree(yp);
+    cudaFree(xp);
+    cudaFree(bp);
+    cudaFree(refp);
 }
 #endif // JIT
 
