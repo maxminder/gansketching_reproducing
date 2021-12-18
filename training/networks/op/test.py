@@ -99,9 +99,6 @@ void FusedBiasActOp::jit_run() {
     int block_size = 4 * 32;
     int grid_size = (size_x - 1) / (loop_x * block_size) + 1;
 
-    auto y = new Var(x->shape, x->dtype());
-
-    float32* yp;
     float32* xp;
     float32* bp;
     float32* refp;
@@ -109,7 +106,6 @@ void FusedBiasActOp::jit_run() {
     cudaMalloc(&xp, size_x * sizeof(float32));
     cudaMalloc(&bp, size_b * sizeof(float32));
     cudaMalloc(&refp, size_ref * sizeof(float32));
-    cudaMemcpy(yp, y->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(bp, b->ptr<float32>(), size_b * sizeof(float32), cudaMemcpyDefault);
     cudaMemcpy(refp, ref->ptr<float32>(), size_ref * sizeof(float32), cudaMemcpyDefault);
@@ -131,7 +127,7 @@ void FusedBiasActOp::jit_run() {
         use_ref
     );
 
-    cudaMemcpy(y->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
+    cudaMemcpy(output->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
     output = y;
 
 }
