@@ -83,12 +83,12 @@ class Blur(jt.nn.Module):
             kernel = kernel * (upsample_factor ** 2)
 
         #self.register_buffer("kernel", kernel)
-        self.kernel = kernel
-        self.kernel.requires_grad = False
+        self._kernel = kernel
+        #self.kernel.requires_grad = False
         self.pad = pad
 
     def execute(self, input):
-        out = upfirdn2d(input, self.kernel, pad=self.pad)
+        out = upfirdn2d(input, self._kernel, pad=self.pad)
 
         return out
 
