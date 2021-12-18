@@ -35,8 +35,8 @@ class Upsample(jt.nn.Module):
         self.factor = factor
         kernel = make_kernel(kernel) * (factor ** 2)
         # self.register_buffer("kernel", kernel)
-        self.kernel = kernel
-        # self.kernel.requires_grad = False
+        self._kernel = kernel
+        #self.kernel.requires_grad = False
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2 + factor - 1
@@ -45,8 +45,8 @@ class Upsample(jt.nn.Module):
         self.pad = (pad0, pad1)
 
     def execute(self, input):
-        # self.kernel.requires_grad = False
-        out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
+       #self.kernel.requires_grad = False
+        out = upfirdn2d(input, self._kernel, up=self.factor, down=1, pad=self.pad)
 
         return out
 
@@ -58,8 +58,8 @@ class Downsample(jt.nn.Module):
         self.factor = factor
         kernel = make_kernel(kernel)
         # self.register_buffer("kernel", kernel)
-        self.kernel = kernel
-        # self.kernel.requires_grad = False
+        self._kernel = kernel
+        #self.kernel.requires_grad = False
         p = kernel.shape[0] - factor
 
         pad0 = (p + 1) // 2
@@ -68,8 +68,8 @@ class Downsample(jt.nn.Module):
         self.pad = (pad0, pad1)
 
     def execute(self, input):
-        # self.kernel.requires_grad = False
-        out = upfirdn2d(input, self.kernel, up=1, down=self.factor, pad=self.pad)
+        #self.kernel.requires_grad = False
+        out = upfirdn2d(input, self._kernel, up=1, down=self.factor, pad=self.pad)
 
         return out
 
@@ -84,13 +84,13 @@ class Blur(jt.nn.Module):
             kernel = kernel * (upsample_factor ** 2)
 
         #self.register_buffer("kernel", kernel)
-        self.kernel = kernel
-        # self.kernel.requires_grad = False
+        self._kernel = kernel
+        #self.kernel.requires_grad = False
         self.pad = pad
 
     def execute(self, input):
-        # self.kernel.requires_grad = False
-        out = upfirdn2d(input, self.kernel, pad=self.pad)
+        #self.kernel.requires_grad = False
+        out = upfirdn2d(input, self._kernel, pad=self.pad)
 
         return out
 
