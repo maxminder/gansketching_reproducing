@@ -443,7 +443,7 @@ class Generator(jt.nn.Module):
             res = (layer_idx + 5) // 2
             shape = [1, 1, 2 ** res, 2 ** res]
             # self.noises.register_buffer(f"noise_{layer_idx}", torch.randn(*shape))
-            setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape))
+            setattr(self.noises,f"noise_{layer_idx}",jt.randn(*shape,requires_grad=False))
 
         for i in range(3, self.log_size + 1):
             out_channel = self.channels[2 ** i]
