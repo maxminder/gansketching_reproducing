@@ -76,50 +76,6 @@ __global__ void kernel(scalar_t* out, const scalar_t* p_x, const scalar_t* p_b, 
 }
 
 void FusedBiasActOp::jit_run() {
-
-    int curDevice = -1;
-    cudaGetDevice(&curDevice);
-    cudaStream_t stream = at::cuda::getCurrentCUDAStream(curDevice);
-
-    auto x = input;
-    auto b = bias;
-    auto ref = refer;
-
-    int use_bias = b->numel() ? 1 : 0;
-    int use_ref = ref->numel() ? 1 : 0;
-
-    int size_x = x->numel();
-    int size_b = b->numel();
-    int step_b = 1;
-
-    for (int i = 1 + 1; i < x->ndim(); i++) {
-        step_b *= x->dsize(i);
-    }
-
-    int loop_x = 4;
-    int block_size = 4 * 32;
-    int grid_size = (size_x - 1) / (loop_x * block_size) + 1;
-
-    auto y = new Var(x->shape, x->dtype());
-
-    kernel<<<grid_size, block_size, 0, stream>>>(
-        y->ptr(),
-        x->ptr(),
-        b->ptr(),
-        ref->ptr(),
-        act,
-        grad,
-        alpha,
-        scale,
-        loop_x,
-        size_x,
-        step_b,
-        size_b,
-        use_bias,
-        use_ref
-    );
-
-    output = y;
 }
 #endif // JIT
 
