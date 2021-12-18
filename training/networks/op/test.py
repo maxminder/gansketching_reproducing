@@ -32,7 +32,7 @@ namespace jittor {
 FusedBiasActOp::FusedBiasActOp(Var* input, Var* bias, Var* refer, int act, int grad, double alpha, double scale) : input(input), bias(bias), refer(refer),act(act), grad(grad), alpha(alpha), scale(scale) {
     flags.set(NodeFlags::_cuda, 1);
     flags.set(NodeFlags::_cpu, 1);
-    output = create_output(input->shape, input->dtype);
+    output = create_output(input->shape, input->dtype());
 }
 
 
