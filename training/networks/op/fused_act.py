@@ -8,10 +8,10 @@ fused = jt.compile_custom_ops((src, header))
 
 class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
-    def execute(ctx, grad_output, out, bias, negative_slope, scale):
-        ctx.save_for_backward(out)
-        ctx.negative_slope = negative_slope
-        ctx.scale = scale
+    def execute(self, grad_output, out, bias, negative_slope, scale):
+        self._out = out
+        self.negative_slope = negative_slope
+        self.scale = scale
 
         empty = grad_output.new_empty(0)
 
@@ -34,9 +34,8 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
     @staticmethod
     def backward(ctx, gradgrad_input, gradgrad_bias):
-        out, = ctx.saved_tensors
         gradgrad_out = fused.fused_bias_act(
-            gradgrad_input, gradgrad_bias, out, 3, 1, ctx.negative_slope, ctx.scale
+            gradgrad_input, gradgrad_bias, self._out, 3, 1, ctx.negative_slope, ctx.scale
         ).fetch_sync()
 
         return gradgrad_out, None, None, None, None
@@ -52,7 +51,7 @@ class FusedLeakyReLUFunction(jt.Function):
             bias = empty
 
         out = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
-        self.save_for_backward(out)
+        self._out = out
         self.negative_slope = negative_slope
         self.scale = scale
 
@@ -60,10 +59,9 @@ class FusedLeakyReLUFunction(jt.Function):
 
     # @staticmethod
     def grad(self, grad_output):
-        out, = self.saved_tensors
 
         grad_input, grad_bias = FusedLeakyReLUFunctionBackward.apply(
-            grad_output, out, self.bias, self.negative_slope, self.scale
+            grad_output, self._out, self.bias, self.negative_slope, self.scale
         )
 
         if not self.bias:
