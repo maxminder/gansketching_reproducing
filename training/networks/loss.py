@@ -102,6 +102,7 @@ class RegularizeD(jt.nn.Module):
         outputs = real_pred.reshape(real_pred.shape[0], -1).mean(1).sum()
         print("103")
         grad_real = jt.grad(outputs, real_img)   #存疑
+        grad_real.sync_all()
         print("105")
         # grad_real, = autograd.grad(
         #     outputs=outputs, inputs=real_img, create_graph=True
