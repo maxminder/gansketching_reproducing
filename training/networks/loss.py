@@ -23,18 +23,18 @@ class GANLoss(jt.nn.Module):
     def get_target_tensor(self, input, target_is_real):
         if target_is_real:
             if self.real_label_tensor is None:
-                self.real_label_tensor = self.Tensor(1).fill_(self.real_label)
+                self.real_label_tensor = self.Tensor(1.).fill_(self.real_label)
                 self.real_label_tensor.requires_grad_(False)
             return self.real_label_tensor.expand_as(input)
         else:
             if self.fake_label_tensor is None:
-                self.fake_label_tensor = self.Tensor(1).fill_(self.fake_label)
+                self.fake_label_tensor = self.Tensor(1.).fill_(self.fake_label)
                 self.fake_label_tensor.requires_grad_(False)
             return self.fake_label_tensor.expand_as(input)
 
     def get_zero_tensor(self, input):
         if self.zero_tensor is None:
-            self.zero_tensor = self.Tensor(1).fill_(0)
+            self.zero_tensor = self.Tensor(1.).fill_(0)
             self.zero_tensor.requires_grad_(False)
         return self.zero_tensor.expand_as(input)
 
