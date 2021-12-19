@@ -1,5 +1,7 @@
 #include "var.h"
 #include "upfirdn2d_op.h"
+#include <cuda.h>
+#include <cuda_runtime.h>
 
 namespace jittor {
 #ifndef JIT
@@ -211,13 +213,31 @@ void Upfirdn2dOp::jit_run() {
     auto x = input;
     auto k = kernel;
 
-    auto* __restrict__ yp = output->ptr<To>();
-    auto* __restrict__ xp = input->ptr<Ti>();
-    auto* __restrict__ kp = kernel->ptr<Tk>();
+    auto* __restrict__ yp = output->ptr<float32>();
+    auto* __restrict__ xp = input->ptr<float32>();
+    auto* __restrict__ kp = kernel->ptr<float32>();
+
+    //int curDevice = -1;
+    //cudaGetDevice(&curDevice);
+    //cudaStream_t stream = at::cuda::getCurrentCUDAStream(curDevice);
 
     UpFirDn2DKernelParams p;
 
-    // output = at::empty({p.major_dim, p.out_h, p.out_w, p.minor_dim}, x.options());
+    //output = at::empty({p.major_dim, p.out_h, p.out_w, p.minor_dim}, x.options());
+    output = create_output({p.major_dim, p.out_h, p.out_w, p.minor_dim}, x->dtype());
+    // int size_x = x->numel();
+    // int size_k = k->numel();
+    // int size_out = out->numel();
+
+    // float32* xp;
+    // float32* kp;
+    // float32* outp;
+    // cudaMalloc(&xp, size_x * sizeof(float32));
+    // cudaMalloc(&kp, size_k * sizeof(float32));
+    // cudaMalloc(&outp, size_out * sizeof(float32));
+    // cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
+    // cudaMemcpy(kp, b->ptr<float32>(), size_k * sizeof(float32), cudaMemcpyDefault);
+    // cudaMemcpy(outp, out->ptr<float32>(), size_out * sizeof(float32), cudaMemcpyDefault);
 
     p.major_dim = x->shape[0];
     p.in_h = x->shape[1];
@@ -234,10 +254,8 @@ void Upfirdn2dOp::jit_run() {
     p.pad_y0 = pad_y0;
     p.pad_y1 = pad_y1;
 
-    p.out_h = (p.in_h * p.up_y + p.pad_y0 + p.pad_y1 - p.kernel_h + p.down_y) /
-            p.down_y;
-    p.out_w = (p.in_w * p.up_x + p.pad_x0 + p.pad_x1 - p.kernel_w + p.down_x) /
-            p.down_x;
+    p.out_h = (p.in_h * p.up_y + p.pad_y0 + p.pad_y1 - p.kernel_h + p.down_y) / p.down_y;
+    p.out_w = (p.in_w * p.up_x + p.pad_x0 + p.pad_x1 - p.kernel_w + p.down_x) / p.down_x;
 
 
     int mode = -1;
@@ -303,58 +321,38 @@ void Upfirdn2dOp::jit_run() {
    
         switch (mode) {
         case 1:
-        upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 1, 1, 1, 1, 4, 4, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         case 2:
-        upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 3, 3, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 1, 1, 1, 1, 3, 3, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         case 3:
-        upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 2, 2, 1, 1, 4, 4, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         case 4:
-        upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 2, 2, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 2, 2, 1, 1, 2, 2, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         case 5:
-        upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 1, 1, 2, 2, 4, 4, 8, 32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         case 6:
-        upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(output.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
+        upfirdn2d_kernel<float32, 1, 1, 2, 2, 4, 4, 8, 32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
 
         break;
 
         default:
-        upfirdn2d_kernel_large<scalar_t><<<grid_size, block_size, 0, stream>>>(
-          output.data_ptr<scalar_t>(), x.data_ptr<scalar_t>(),
-          k.data_ptr<scalar_t>(), p);
-        }
+        upfirdn2d_kernel_large<float32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+      }
 
 }
 #endif // JIT
