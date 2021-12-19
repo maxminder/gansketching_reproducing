@@ -109,7 +109,7 @@ class EqualConv2d(jt.nn.Module):
         self.padding = padding
 
         if bias:
-            self.bias = jt.zeros(out_channel, requires_grad=True)
+            self.bias = jt.zeros(out_channel)
         else:
             self.bias = None
 
