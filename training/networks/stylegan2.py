@@ -142,7 +142,7 @@ class EqualLinear(jt.nn.Module):
         self.weight =jt.randn(out_dim, in_dim)/lr_mul
 
         if bias:
-            self.bias =jt.init.constant_(out_dim, value=bias_init)
+            self.bias = jt.init.constant(out_dim, value=bias_init, requires_grad = True)
         else:
             self.bias = None
 
