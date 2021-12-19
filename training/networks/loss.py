@@ -106,7 +106,8 @@ class RegularizeD(jt.nn.Module):
         # )
         grad_penalty = grad_real.pow(2).reshape(grad_real.shape[0], -1).sum(1).mean()
 
-        return real_pred
+        return outputs
+
 
 class WeightLoss(jt.nn.Module):
     def __init__(self, params):

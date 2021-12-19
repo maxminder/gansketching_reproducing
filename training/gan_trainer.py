@@ -76,9 +76,9 @@ class GANTrainer():
         # d_reg_loss.backward()
         # self.optimizer_D.step()
         d_reg_loss.sync()
-        print('before step')
+        #print('before step')
         self.optimizer_D.step(d_reg_loss)
-        print('after step')
+        #print('after step')
         update_dict(self.d_losses, d_reg_losses)
 
     def train_one_step(self, data, iters):
