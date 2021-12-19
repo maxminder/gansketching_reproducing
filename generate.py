@@ -55,23 +55,9 @@ def generate(args, netG, device, mean_latent):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
-
-            #  热身
-            jt.sync_all(True)
-            for i in range(10):
-                sample, tmp = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
-                sample.sync()
-            jt.sync_all(True)
-
-            # 开始测试运行时间
-            start = time.time()
-            for i in range(100):
-                sample, tmp = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
-                sample.sync()
-            jt.sync_all(True)
-            end = time.time()
-
-            print("Jittor FPS:", (100 * args.batch_size) / (end - start))
+                
+            print("start")
+            sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
                 save_image_pytorch(s, f'{args.save_dir}/{str(ind).zfill(6)}.png')
