@@ -8,7 +8,7 @@ from eval import Evaluator
 from util.visualizer import Visualizer
 from training.gan_trainer import GANTrainer
 from training.dataset import create_dataloader, yield_data
-
+jt.cudnn.set_max_workspace_ratio(0.0)
 jt.flags.use_cuda = jt.has_cuda
 
 
