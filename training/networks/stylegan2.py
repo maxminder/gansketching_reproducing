@@ -144,7 +144,7 @@ class EqualLinear(jt.nn.Module):
 
         if bias:
             # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
-            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
+            self.bias = jt.nn.Parameter(jt.init.gauss(out_dim))
         else:
             self.bias = None
 
