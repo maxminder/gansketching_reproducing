@@ -30,7 +30,7 @@ def get_opt():
     parser.add_argument("--max_iter", type=int, default=75001, help="which iteration to stop training")
     parser.add_argument("--max_epoch", type=int, default=1000000, help="max number of training epoch")
 
-    parser.add_argument("--batch", type=int, default=4, help="batch size used for training")
+    parser.add_argument("--batch", type=int, default=1, help="batch size used for training")
     parser.add_argument("--size", type=int, default=256, help="image size for StyleGAN2")
     parser.add_argument("--z_dim", type=int, default=512, help="dimensionality of the noise z")
     parser.add_argument("--n_mlp", type=int, default=8, help="number of layers for the style mapping network")
