@@ -76,7 +76,6 @@ def training_loop():
 
             # timer for optimization per iteration
             optimize_start_time = time.time()
-            print('Training at iter :', total_iters)
             trainer.train_one_step(data, total_iters)
             optimize_time = (time.time() - optimize_start_time) * 0.005 + 0.995 * optimize_time
 
@@ -105,8 +104,6 @@ def training_loop():
 
                 visualizer.print_current_metrics(epoch, total_iters, metrics, metrics_time)
                 visualizer.plot_current_errors(metrics, total_iters)
-            jt.sync_all()
-            jt.display_memory_info()
 
             total_iters += 1
             epoch_iter += 1
