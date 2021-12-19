@@ -111,8 +111,8 @@ class EqualConv2d(jt.nn.Module):
         self.padding = padding
 
         if bias:
-            temp = np.zeros(out_channel,dtype=float)
-            self.bias = jt.nn.Parameter(jt.Var(temp))
+            temp = np.zeros(out_channel)
+            self.bias = jt.nn.Parameter(jt.float32(temp))
 
         else:
             self.bias = None
@@ -144,9 +144,8 @@ class EqualLinear(jt.nn.Module):
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
         if bias:
-            # self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
-            temp = np.empty(out_dim,dtype=float).fill(bias_init)
-            self.bias = jt.nn.Parameter(jt.Var(temp))
+            temp = np.empty(out_dim).fill(bias_init)
+            self.bias = jt.nn.Parameter(jt.float32(temp))
         else:
             self.bias = None
 
@@ -157,14 +156,10 @@ class EqualLinear(jt.nn.Module):
 
     def execute(self, input):
         if self.activation:
-            # out = F.linear(input, self.weight * self.scale)
             out = jt.nn.matmul_transpose(input, self.weight * self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
         else:
-            # out = F.linear(
-            #     input, self.weight * self.scale, bias=self.bias * self.lr_mul
-            # )
             out = jt.nn.matmul_transpose(input, self.weight*self.scale) + self.bias * self.lr_mul
 
         return out
