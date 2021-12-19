@@ -3,12 +3,12 @@ import argparse
 
 import random
 import numpy as np
-# import torch
-# from torchvision import utils
 import jittor as jt
 from training.networks.stylegan2 import Generator
 from PIL import Image
 import math
+import time
+
 jt.flags.use_cuda = jt.has_cuda
 
 def save_image_pytorch(img, name):
@@ -55,7 +55,10 @@ def generate(args, netG, device, mean_latent):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
+            t1 = time.process_time()
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
+            t2 = time.process_time()
+            print("netG cost: {}s".format(t2 - t1))
 
             for s in sample:
                 save_image_pytorch(s, f'{args.save_dir}/{str(ind).zfill(6)}.png')

@@ -1,5 +1,7 @@
 import os
 import jittor as jt
+import time
+
 module_path = os.path.dirname(__file__)
 src = os.path.join(module_path, "fused_bias_act_op.cc")
 header = os.path.join(module_path, "fused_bias_act_op.h")
@@ -15,9 +17,12 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
         empty = grad_output.new_empty(0)
 
+        start = time.process_time()
         grad_input = jt.array(fused.fused_bias_act(
             grad_output, empty, out, 3, 1, negative_slope, scale
         ).fetch_sync())
+        end = time.process_time()
+        print("fused in FusedLeakyReLUFunctionBackward execute cost: {}s".format(end - start))
 
         dim = [0]
 
@@ -33,10 +38,14 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
         return grad_input, grad_bias
 
     @staticmethod
-    def backward(ctx, gradgrad_input, gradgrad_bias):
+    def grad(ctx, gradgrad_input, gradgrad_bias):
+
+        start = time.process_time()
         gradgrad_out = jt.array(fused.fused_bias_act(
             gradgrad_input, gradgrad_bias, self._out, 3, 1, ctx.negative_slope, ctx.scale
         ).fetch_sync())
+        end = time.process_time()
+        print("fused in FusedLeakyReLUFunctionBackward grad cost: {}s".format(end - start))
 
         return gradgrad_out, None, None, None, None
 
@@ -50,7 +59,11 @@ class FusedLeakyReLUFunction(jt.Function):
         if bias is None:
             bias = empty
 
+        start = time.process_time()
         out = jt.array(fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync())
+        end = time.process_time()
+        print("fused in FusedLeakyReLUFunction execute cost: {}s".format(end - start))
+
         self._out = out
         self.negative_slope = negative_slope
         self.scale = scale
