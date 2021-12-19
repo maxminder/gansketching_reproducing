@@ -79,17 +79,7 @@ void FusedBiasActOp::jit_run() {
     auto* __restrict__ bp = b->ptr<float32>();
     auto* __restrict__ refp = ref->ptr<float32>();
 
-    printf(" size_x : %d \n", size_x);
-    printf(" size_x : %d \n", size_b);
-    printf(" size_x : %d \n", size_ref);
-    printf(" size_x : %d \n", step_b);
-
-    cudaEvent_t startTime, endTime;
-    cudaEventCreate(&startTime);
-    cudaEventCreate(&endTime);
-    cudaEventRecord(startTime, 0);
-
-    kernel<<<grid_size, block_size>>>(
+    kernel<<<grid_size, block_size, 0>>>(
         yp,
         xp,
         bp,
@@ -105,17 +95,6 @@ void FusedBiasActOp::jit_run() {
         use_bias,
         use_ref
     );
-
-    cudaEventRecord(endTime, 0);
-    cudaEventSynchronize(startTime);
-    cudaEventSynchronize(endTime);
-    
-    float time;
-    cudaEventElapsedTime(&time, startTime, endTime);
-    printf(" time (GPU) : %f ms \n", time);
-
-    cudaEventDestroy(startTime);
-    cudaEventDestroy(endTime);
 }
 #endif // JIT
 

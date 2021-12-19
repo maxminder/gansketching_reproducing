@@ -17,12 +17,9 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
 
         empty = grad_output.new_empty(0)
 
-        start = time.time()
         grad_input = jt.array(fused.fused_bias_act(
             grad_output, empty, out, 3, 1, negative_slope, scale
         ).fetch_sync())
-        end = time.time()
-        print("fused in FusedLeakyReLUFunctionBackward execute cost: {}s".format(end - start))
 
         dim = [0]
 
@@ -40,12 +37,9 @@ class FusedLeakyReLUFunctionBackward(jt.Function):
     @staticmethod
     def grad(ctx, gradgrad_input, gradgrad_bias):
 
-        start = time.time()
         gradgrad_out = jt.array(fused.fused_bias_act(
             gradgrad_input, gradgrad_bias, self._out, 3, 1, ctx.negative_slope, ctx.scale
         ).fetch_sync())
-        end = time.time()
-        print("fused in FusedLeakyReLUFunctionBackward grad cost: {}s".format(end - start))
 
         return gradgrad_out, None, None, None, None
 
@@ -59,16 +53,8 @@ class FusedLeakyReLUFunction(jt.Function):
         if bias is None:
             bias = empty
 
-        start = time.time()
-        print(str(input.shape))
-        print(str(bias.shape))
-        print(str(empty.shape))
         out_np = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
         end = time.time()
-        print("fused in FusedLeakyReLUFunction execute out_np cost: {}s".format(end - start))
-        out = jt.array(out_np)
-        end = time.time()
-        print("fused in FusedLeakyReLUFunction execute out cost: {}s".format(end - start))
 
         self._out = out
         self.negative_slope = negative_slope
