@@ -155,14 +155,15 @@ class EqualLinear(jt.nn.Module):
     def execute(self, input):
         if self.activation:
             # out = F.linear(input, self.weight * self.scale)
-            out = jt.nn.matmul_transpose(input, self.weight*self.scale)
+            out = jt.nn.matmul_transpose(input, self.weight * self.scale)
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
         else:
             # out = F.linear(
             #     input, self.weight * self.scale, bias=self.bias * self.lr_mul
             # )
-            out = jt.nn.matmul_transpose(input, self.weight*self.scale) + self.bias * self.lr_mul
+            out = jt.nn.matmul_transpose(input, self.weight*self.scale)
+            out = out + self.bias * self.lr_mul
 
         return out
 
@@ -249,13 +250,13 @@ class ModulatedConv2d(jt.nn.Module):
             weight = weight.transpose(1, 2).reshape(
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
-            # input = jt.misc.split(input,in_channel,dim=1)
-            # weight = jt.misc.split(weight,in_channel,dim=0)
-            # result =  []
-            # for i in range(len(input)):
-            #     result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
-            # out = jt.concat(result,dim=1)
-            out = jt.nn.conv_transpose2d(input,weight,padding=0,stride=2,groups=batch)
+            input = jt.misc.split(input,in_channel,dim=1)
+            weight = jt.misc.split(weight,in_channel,dim=0)
+            result =  []
+            for i in range(len(input)):
+                result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
+            out = jt.concat(result,dim=1)
+            #out = jt.nn.conv_transpose2d(input,weight,padding=0,stride=2,groups=batch)
             # out = jt.cudnn.ops.cudnn_conv_backward_x(
             #     weight, input,
             #     height = input.shape[2] * 2 + 1, width = input.shape[3] * 2 + 1,
