@@ -111,8 +111,7 @@ class EqualConv2d(jt.nn.Module):
         self.padding = padding
 
         if bias:
-            temp = np.zeros(out_channel,dtype=float)
-            self.bias = jt.nn.Parameter(jt.array(temp))
+            self.bias = jt.nn.Parameter(jt.zeros(out_channel))
 
         else:
             self.bias = None
@@ -144,8 +143,7 @@ class EqualLinear(jt.nn.Module):
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
         if bias:
-            temp = np.empty(out_dim,dtype=float).fill(bias_init)
-            self.bias = jt.nn.Parameter(jt.array(temp))
+            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
         else:
             self.bias = None
 
@@ -692,13 +690,13 @@ class Discriminator(jt.nn.Module):
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
         # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        stddev = stddev.numpy()
-        stddev = jt.array(stddev.var(0))
-        stddev = jt.sqrt(stddev + 1e-8)
-        # stddev = stddev - stddev.mean(0,keepdims=True)
-        # stddev = stddev.sqr()
-        # stddev = stddev.sum(0) / stddev.shape[0]
+        # stddev = stddev.numpy()
+        # stddev = jt.array(stddev.var(0))
         # stddev = jt.sqrt(stddev + 1e-8)
+        stddev = stddev - stddev.mean(0,keepdims=True)
+        stddev = stddev.sqr()
+        stddev = stddev.sum(0) / stddev.shape[0]
+        stddev = jt.sqrt(stddev + 1e-8)
         stddev = stddev.mean([2, 3, 4], keepdims=True).squeeze(2)
         stddev = stddev.repeat(group, 1, height, width)
         out = jt.concat([out, stddev], 1)
