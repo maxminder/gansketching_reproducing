@@ -26,6 +26,7 @@ def save_image_pytorch(img, name):
 def generate(args, netG, device, mean_latent):
     """Generates images from a generator."""
     # loading a w-latent direction shift if given
+    print('aiheihei')
     if args.w_shift is not None:
         #w_shift = torch.from_numpy(np.load(args.w_shift)).to(device)
         w_shift = jt.float32(np.load(args.w_shift))
