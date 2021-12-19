@@ -108,8 +108,6 @@ class EqualConv2d(jt.nn.Module):
         self.stride = stride
         self.padding = padding
 
-
-        print("112: bias:", str(bias))
         if bias:
             self.bias = jt.zeros(out_channel, requires_grad=True)
         else:
