@@ -105,6 +105,8 @@ def training_loop():
 
                 visualizer.print_current_metrics(epoch, total_iters, metrics, metrics_time)
                 visualizer.plot_current_errors(metrics, total_iters)
+            jt.sync_all()
+            jt.display_memory_info()
 
             total_iters += 1
             epoch_iter += 1
