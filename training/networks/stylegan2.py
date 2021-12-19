@@ -142,10 +142,7 @@ class EqualLinear(jt.nn.Module):
 
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
-        if bias:
-            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
-        else:
-            self.bias = None
+        self.bias = jt.init.gauss(out_dim)
 
         self.activation = activation
 
@@ -153,7 +150,6 @@ class EqualLinear(jt.nn.Module):
         self.lr_mul = lr_mul
 
     def execute(self, input):
-        self.bias.requires_grad = True
         if self.activation:
             # out = F.linear(input, self.weight * self.scale)
             out = jt.nn.matmul_transpose(input, self.weight * self.scale)
