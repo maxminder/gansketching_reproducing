@@ -24,8 +24,6 @@ struct FusedBiasActOp : Op {
 src = """
 #include "var.h"
 #include "fused_bias_act_op.h"
-#include <cuda.h>
-#include <cuda_runtime.h>
 
 namespace jittor {
 #ifndef JIT
@@ -99,17 +97,10 @@ void FusedBiasActOp::jit_run() {
     int block_size = 4 * 32;
     int grid_size = (size_x - 1) / (loop_x * block_size) + 1;
 
-    float32* yp;
-    float32* xp;
-    float32* bp;
-    float32* refp;
-    cudaMalloc(&yp, size_x * sizeof(float32));
-    cudaMalloc(&xp, size_x * sizeof(float32));
-    cudaMalloc(&bp, size_b * sizeof(float32));
-    cudaMalloc(&refp, size_ref * sizeof(float32));
-    cudaMemcpy(xp, x->ptr<float32>(), size_x * sizeof(float32), cudaMemcpyDefault);
-    cudaMemcpy(bp, b->ptr<float32>(), size_b * sizeof(float32), cudaMemcpyDefault);
-    cudaMemcpy(refp, ref->ptr<float32>(), size_ref * sizeof(float32), cudaMemcpyDefault);
+    auto* __restrict__ yp = output->ptr<float32>();
+    auto* __restrict__ xp = x->ptr<float32>();
+    auto* __restrict__ bp = b->ptr<float32>();
+    auto* __restrict__ refp = ref->ptr<float32>();
 
     kernel<<<grid_size, block_size>>>(
         yp,
@@ -127,9 +118,6 @@ void FusedBiasActOp::jit_run() {
         use_bias,
         use_ref
     );
-
-    cudaMemcpy(output->ptr<float32>(), yp, size_x * sizeof(float32), cudaMemcpyDefault);
-
 }
 #endif // JIT
 
