@@ -63,9 +63,12 @@ class FusedLeakyReLUFunction(jt.Function):
         print(str(input.shape))
         print(str(bias.shape))
         print(str(empty.shape))
-        out = jt.array(fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync())
+        out_np = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
         end = time.time()
-        print("fused in FusedLeakyReLUFunction execute cost: {}s".format(end - start))
+        print("fused in FusedLeakyReLUFunction execute out_np cost: {}s".format(end - start))
+        out = jt.array(out_np)
+        end = time.time()
+        print("fused in FusedLeakyReLUFunction execute out cost: {}s".format(end - start))
 
         self._out = out
         self.negative_slope = negative_slope
