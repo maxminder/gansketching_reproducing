@@ -61,6 +61,7 @@ def generate(args, netG, device, mean_latent):
             for i in range(10):
                 sample, tmp = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
                 sample.sync()
+                print(str(i))
             jt.sync_all(True)
 
             # 开始测试运行时间
@@ -68,6 +69,7 @@ def generate(args, netG, device, mean_latent):
             for i in range(100):
                 sample, tmp = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
                 sample.sync()
+                print(str(i))
             jt.sync_all(True)
             end = time.time()
 
