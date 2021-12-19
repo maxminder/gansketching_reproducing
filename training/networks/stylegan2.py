@@ -109,7 +109,7 @@ class EqualConv2d(jt.nn.Module):
 
         self.stride = stride
         self.padding = padding
-
+        print('bias is what', bias)
         if bias:
             self.bias = jt.nn.Parameter(jt.zeros(out_channel))
 
@@ -159,8 +159,6 @@ class EqualLinear(jt.nn.Module):
 
         else:
             out = jt.nn.matmul_transpose(input, self.weight*self.scale) + self.bias * self.lr_mul
-        
-        out = out + self.bias
 
         return out
 
