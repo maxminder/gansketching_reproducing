@@ -145,7 +145,7 @@ class EqualLinear(jt.nn.Module):
 
         if bias:
             # self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
-            temp = np.empty(out_dim).fill(bias_init,dtype=float)
+            temp = np.empty(out_dim,,dtype=float).fill(bias_init)
             self.bias = jt.nn.Parameter(jt.Var(temp))
         else:
             self.bias = None
