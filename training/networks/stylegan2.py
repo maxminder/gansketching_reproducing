@@ -108,9 +108,10 @@ class EqualConv2d(jt.nn.Module):
         self.stride = stride
         self.padding = padding
 
-        if bias:
-            self.bias = jt.zeros(out_channel)
 
+        print("112: bias:", str(bias))
+        if bias:
+            self.bias = jt.zeros(out_channel, requires_grad=True)
         else:
             self.bias = None
 
@@ -141,7 +142,7 @@ class EqualLinear(jt.nn.Module):
         self.weight =jt.randn(out_dim, in_dim)/lr_mul
 
         if bias:
-            self.bias =jt.init.constant(out_dim,value=bias_init)
+            self.bias =jt.init.constant_(out_dim, value=bias_init)
         else:
             self.bias = None
 
@@ -681,10 +682,6 @@ class Discriminator(jt.nn.Module):
         stddev = out.view(
             group, -1, self.stddev_feat, channel // self.stddev_feat, height, width
         )
-        # stddev = jt.sqrt(stddev.var(0, unbiased=False) + 1e-8)
-        # stddev = stddev.numpy()
-        # stddev = jt.array(stddev.var(0))
-        # stddev = jt.sqrt(stddev + 1e-8)
         stddev = stddev - stddev.mean(0,keepdims=True)
         stddev = stddev.sqr()
         stddev = stddev.sum(0) / stddev.shape[0]
