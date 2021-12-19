@@ -153,6 +153,7 @@ class EqualLinear(jt.nn.Module):
         self.lr_mul = lr_mul
 
     def execute(self, input):
+        self.bias.requires_grad = True
         if self.activation:
             # out = F.linear(input, self.weight * self.scale)
             out = jt.nn.matmul_transpose(input, self.weight * self.scale)
