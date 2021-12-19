@@ -55,9 +55,9 @@ def generate(args, netG, device, mean_latent):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
-            t1 = time.process_time()
+            t1 = time.time()
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
-            t2 = time.process_time()
+            t2 = time.time()
             print("netG cost: {}s".format(t2 - t1))
 
             for s in sample:

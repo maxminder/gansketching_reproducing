@@ -149,9 +149,6 @@ class EqualLinear(jt.nn.Module):
             out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
         else:
-            # out = F.linear(
-            #     input, self.weight * self.scale, bias=self.bias * self.lr_mul
-            # )
             out = jt.nn.matmul_transpose(input, self.weight*self.scale) + self.bias * self.lr_mul
 
         return out
