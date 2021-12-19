@@ -110,11 +110,8 @@ class EqualConv2d(jt.nn.Module):
         self.stride = stride
         self.padding = padding
 
-        if bias:
-            self.bias = jt.nn.Parameter(jt.zeros(out_channel))
+        self.bias = jt.nn.Parameter(jt.zeros(out_channel))
 
-        else:
-            self.bias = None
 
     def execute(self, input):
         out = jt.nn.conv2d(
@@ -142,11 +139,8 @@ class EqualLinear(jt.nn.Module):
 
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
-        if bias:
             # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
-            self.bias = jt.nn.Parameter(jt.init.gauss(out_dim))
-        else:
-            self.bias = None
+        self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
 
         self.activation = activation
 
