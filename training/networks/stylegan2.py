@@ -251,7 +251,7 @@ class ModulatedConv2d(jt.nn.Module):
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
             # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            print(input.shape)
+            # print(input.shape)
             input = jt.misc.split(input,in_channel,dim=1)
             weight = jt.misc.split(weight,in_channel,dim=0)
             result =  []
