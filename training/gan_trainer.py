@@ -65,7 +65,9 @@ class GANTrainer():
         # d_loss.backward()
         # self.optimizer_D.step()
         d_loss.sync()
+        print('before step')
         self.optimizer_D.step(d_loss)
+        print('after step')
         update_dict(self.d_losses, d_losses)
         update_dict(self.interm_imgs, interm_imgs)
 
