@@ -97,7 +97,8 @@ class FusedLeakyReLU(jt.Module):
         self.scale = scale
 
     def execute(self, input):
-        return fused_leaky_relu(input, self.bias, self.negative_slope, self.scale)
+        return input
+        # return fused_leaky_relu(input, self.bias, self.negative_slope, self.scale)
 
 
 def fused_leaky_relu(input, bias=None, negative_slope=0.2, scale=2 ** 0.5):

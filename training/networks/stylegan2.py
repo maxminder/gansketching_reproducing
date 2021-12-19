@@ -34,7 +34,6 @@ class Upsample(jt.nn.Module):
 
         self.factor = factor
         kernel = make_kernel(kernel) * (factor ** 2)
-        # self.register_buffer("kernel", kernel)
         self.kernel = kernel
         self.kernel.requires_grad = False
         p = kernel.shape[0] - factor
@@ -47,7 +46,6 @@ class Upsample(jt.nn.Module):
     def execute(self, input):
         self.kernel.requires_grad = False
         out = upfirdn2d(input, self.kernel, up=self.factor, down=1, pad=self.pad)
-
         return out
 
 
