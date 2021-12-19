@@ -53,8 +53,7 @@ class FusedLeakyReLUFunction(jt.Function):
         if bias is None:
             bias = empty
 
-        out_np = fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync()
-        end = time.time()
+        out = jt.array(fused.fused_bias_act(input, bias, empty, 3, 0, negative_slope, scale).fetch_sync())
 
         self._out = out
         self.negative_slope = negative_slope
