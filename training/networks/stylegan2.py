@@ -110,8 +110,11 @@ class EqualConv2d(jt.nn.Module):
         self.stride = stride
         self.padding = padding
 
-        self.bias = jt.nn.Parameter(jt.zeros(out_channel))
+        if bias:
+            self.bias = jt.nn.Parameter(jt.zeros(out_channel))
 
+        else:
+            self.bias = None
 
     def execute(self, input):
         out = jt.nn.conv2d(
@@ -139,8 +142,8 @@ class EqualLinear(jt.nn.Module):
 
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
-            # self.bias = nn.Parameter(torch.zeros(out_dim).fill_(bias_init))
         self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
+        self.bias = None
 
         self.activation = activation
 
@@ -244,15 +247,13 @@ class ModulatedConv2d(jt.nn.Module):
             weight = weight.transpose(1, 2).reshape(
                 batch * in_channel, self.out_channel, self.kernel_size, self.kernel_size
             )
-            # out = F.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            # print(input.shape)
-            input = jt.misc.split(input,in_channel,dim=1)
-            weight = jt.misc.split(weight,in_channel,dim=0)
-            result =  []
-            for i in range(len(input)):
-                result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
-            # out = jt.nn.conv_transpose2d(input, weight, padding=0, stride=2, groups=batch)
-            out = jt.concat(result,dim=1)
+            # input = jt.misc.split(input,in_channel,dim=1)
+            # weight = jt.misc.split(weight,in_channel,dim=0)
+            # result =  []
+            # for i in range(len(input)):
+            #     result.append(jt.nn.conv_transpose2d(input[i],weight[i],padding=0,stride=2))
+            # out = jt.concat(result,dim=1)
+            out = jt.nn.conv_transpose2d(input,weight,padding=0,stride=2,groups=batch)
             # out = jt.cudnn.ops.cudnn_conv_backward_x(
             #     weight, input,
             #     height = input.shape[2] * 2 + 1, width = input.shape[3] * 2 + 1,
