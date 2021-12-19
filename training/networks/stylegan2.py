@@ -142,10 +142,7 @@ class EqualLinear(jt.nn.Module):
 
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
-        if bias:
-            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
-        else:
-            self.bias = None
+        self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
 
         self.activation = activation
 
@@ -155,8 +152,7 @@ class EqualLinear(jt.nn.Module):
     def execute(self, input):
         if self.activation:
             out = jt.nn.matmul_transpose(input, self.weight * self.scale)
-            # out = fused_leaky_relu(out, self.bias * self.lr_mul)
-            out = out + self.bias
+            out = fused_leaky_relu(out, self.bias * self.lr_mul)
 
         else:
             out = jt.nn.matmul_transpose(input, self.weight*self.scale) + self.bias * self.lr_mul
