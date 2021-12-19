@@ -41,6 +41,7 @@ class GANTrainer():
         # self.optimizer_G.zero_grad()
         # g_loss.backward()
         # self.optimizer_G.step()
+        g_loss.sync()
         self.optimizer_G.step(g_loss)
         self.generated = generated
         update_dict(self.g_losses, g_losses)
@@ -52,6 +53,7 @@ class GANTrainer():
         # self.optimizer_G.zero_grad()
         # g_reg_loss.backward()
         # self.optimizer_G.step()
+        g_reg_loss.sync()
         self.optimizer_G.step(g_reg_loss)
         update_dict(self.g_losses, g_reg_losses)
         update_dict(self.trackables, trackables)
@@ -62,6 +64,7 @@ class GANTrainer():
         # self.optimizer_D.zero_grad()
         # d_loss.backward()
         # self.optimizer_D.step()
+        d_loss.sync()
         self.optimizer_D.step(d_loss)
         update_dict(self.d_losses, d_losses)
         update_dict(self.interm_imgs, interm_imgs)
@@ -72,6 +75,7 @@ class GANTrainer():
         # self.optimizer_D.zero_grad()
         # d_reg_loss.backward()
         # self.optimizer_D.step()
+        d_reg_loss.sync()
         self.optimizer_D.step(d_reg_loss)
         update_dict(self.d_losses, d_reg_losses)
 
