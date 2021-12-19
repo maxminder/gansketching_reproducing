@@ -88,7 +88,6 @@ class FusedLeakyReLU(jt.Module):
     def __init__(self, channel, bias=True, negative_slope=0.2, scale=2 ** 0.5):
         super().__init__()
 
-        print("fused_act.py 91: bias:", str(bias))
         if bias:
             self.bias = jt.zeros(channel)
         else:
@@ -103,9 +102,7 @@ class FusedLeakyReLU(jt.Module):
 
 def fused_leaky_relu(input, bias=None, negative_slope=0.2, scale=2 ** 0.5):
     if bias is not None:
-        print("fused_act.py 106: bias is not None")
         rest_dim = [1] * (input.ndim - bias.ndim - 1)
         return jt.nn.leaky_relu(input + bias.view(1, bias.shape[0], *rest_dim), scale=0.2) * scale
     else:
-        print("fused_act.py 110: bias is None")
         return jt.nn.leaky_relu(input, scale=0.2) * scale
