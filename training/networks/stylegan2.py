@@ -111,8 +111,8 @@ class EqualConv2d(jt.nn.Module):
         self.padding = padding
 
         if bias:
-            temp = np.zeros(out_channel)
-            self.bias = jt.nn.Parameter(jt.float32(temp))
+            temp = np.zeros(out_channel,dtype=float)
+            self.bias = jt.nn.Parameter(jt.array(temp))
 
         else:
             self.bias = None
@@ -144,8 +144,8 @@ class EqualLinear(jt.nn.Module):
         self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
 
         if bias:
-            temp = np.empty(out_dim).fill(bias_init)
-            self.bias = jt.nn.Parameter(jt.float32(temp))
+            temp = np.empty(out_dim,dtype=float).fill(bias_init)
+            self.bias = jt.nn.Parameter(jt.array(temp))
         else:
             self.bias = None
 
