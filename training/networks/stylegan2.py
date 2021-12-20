@@ -136,7 +136,7 @@ class EqualConv2d(jt.nn.Module):
 
 class EqualLinear(jt.nn.Module):
     def __init__(
-        self, in_dim, out_dim, bias=True, bias_init=0, lr_mul=1, activation=None
+        self, in_dim, out_dim, bias=False, bias_init=0, lr_mul=1, activation=None
     ):
         super().__init__()
 
@@ -615,7 +615,7 @@ class ConvLayer(jt.nn.Sequential):
         )
 
         if activate:
-            layers.append(FusedLeakyReLU(out_channel, bias=bias))
+            layers.append(FusedLeakyReLU(out_channel, bias=False))
 
         super().__init__(*layers)
 
