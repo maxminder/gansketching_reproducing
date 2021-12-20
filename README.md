@@ -98,6 +98,10 @@ cd GANSketching
 
 This command runs the customized model specified by `ckpt`, and generates samples to `save_dir`.
 
+python generate.py --ckpt checkpoint/church_augment --save_dir output/church_augment
+
+python3 -m pytorch_fid output/church_augment data/eval/gabled_church/image --device cuda
+
 ```
 # generates samples from the "standing cat" model.
 python generate.py --ckpt weights/photosketch_standing_cat_noaug.pth --save_dir output/samples_standing_cat

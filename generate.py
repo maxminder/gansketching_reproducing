@@ -72,7 +72,7 @@ if __name__ == '__main__':
     parser.add_argument('--fixed_z', type=str, default=None, help="expect a .pth file. If given, will use this file as the input noise for the output")
     parser.add_argument('--w_shift', type=str, default=None, help="expect a .pth file. Apply a w-latent shift to the generator")
     parser.add_argument('--batch_size', type=int, default=50, help="batch size used to generate outputs")
-    parser.add_argument('--samples', type=int, default=50, help="number of samples to generate, will be overridden if --fixed_z is given")
+    parser.add_argument('--samples', type=int, default=1000, help="number of samples to generate, will be overridden if --fixed_z is given")
     parser.add_argument('--truncation', type=float, default=0.5, help="strength of truncation")
     parser.add_argument('--truncation_mean', type=int, default=4096, help="number of samples to calculate the mean latent for truncation")
     parser.add_argument('--seed', type=int, default=None, help="if specified, use a fixed random seed")
