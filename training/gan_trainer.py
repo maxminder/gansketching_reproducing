@@ -61,9 +61,6 @@ class GANTrainer():
     def run_discriminator_one_step(self, data):
         d_losses, interm_imgs = self.gan_model(data, mode='discriminator')
         d_loss = sum(d_losses.values()).mean()
-        # self.optimizer_D.zero_grad()
-        # d_loss.backward()
-        # self.optimizer_D.step()
         d_loss.sync()
         self.optimizer_D.step(d_loss)
         update_dict(self.d_losses, d_losses)
@@ -72,9 +69,6 @@ class GANTrainer():
     def run_discriminator_regularization_one_step(self, data):
         d_reg_losses = self.gan_model(data, mode='discriminator-regularize')
         d_reg_loss = sum(d_reg_losses.values()).mean()
-        # self.optimizer_D.zero_grad()
-        # d_reg_loss.backward()
-        # self.optimizer_D.step()
         d_reg_loss.sync()
         #print('before step')
         self.optimizer_D.step(d_reg_loss)
