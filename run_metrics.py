@@ -55,8 +55,6 @@ def get_metrics(opt, name, target):
 
     ckpt_path = f"{opt.model_root}/{name}.pth"
     g = setup_generator(ckpt_path)
-    stats_fake = get_stats(opt, g, fake_folder)
-    stats_real = get_stats(opt, None, real_folder)
 
     fid_value = fid.compute_fid(real_folder+'image', fake_folder+'image', num_workers=0)
 
@@ -64,16 +62,9 @@ def get_metrics(opt, name, target):
     del g
     #torch.cuda.empty_cache()
 
-    fake_feats, real_feats = stats_fake['vgg_features'], stats_real['vgg_features']
-    precision, recall = run_precision_recall(real_feats, fake_feats)
-    # with mp.Pool(1) as p:
-    #     precision, recall = p.apply(run_precision_recall, (real_feats, fake_feats))
-
     return {
         "fid": fid_value,
         "ppl": ppl_wend,
-        "precision": precision,
-        "recall": recall
     }
 
 
