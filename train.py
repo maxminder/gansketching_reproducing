@@ -23,7 +23,8 @@ def training_loop():
     #     mp.set_start_method('spawn')    #存疑
     # mp.set_start_method('spawn')
     if not opt.disable_eval:
-        mp.set_start_method('spawn',force=True)   
+        #mp.set_start_method('spawn')  
+        pass 
 
     print("dataloader for user sketches")
     # dataloader for user sketches
