@@ -127,7 +127,7 @@ class GANTrainer():
         self.gan_model.load(iters)
         load_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
        # state_dict = jt.load(load_path + "misc.pth")
-        with open(load_path, 'rb') as f:
+        with open(load_path + "misc.pth", 'rb') as f:
             obj = f.read()
         state_dict = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
         self.optimizer_G.load_state_dict(state_dict["g_optim"])
