@@ -1,5 +1,5 @@
 python train.py \
---name church_augment --batch 4 \
+--name church_augment --batch 1 \
 --dataroot_sketch /root/lcs/new/gansketching_reproducing/data/sketch/photosketch/gabled_church \
 --dataroot_image /root/lcs/new/gansketching_reproducing/data/image/church --l_image 0.7 \
 --g_pretrained /root/lcs/new/gansketching_reproducing/pretrained/stylegan2-church/netG.pth \
