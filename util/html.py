@@ -56,16 +56,16 @@ class HTML:
         f.close()
 
 
-# if __name__ == '__main__':
-#     html = HTML('web/', 'test_html')
-#     html.add_header('hello world')
+if __name__ == '__main__':
+    html = HTML('web/', 'test_html')
+    html.add_header('hello world')
 
-#     ims = []
-#     txts = []
-#     links = []
-#     for n in range(4):
-#         ims.append('image_%d.jpg' % n)
-#         txts.append('text_%d' % n)
-#         links.append('image_%d.jpg' % n)
-#     html.add_images(ims, txts, links)
-#     html.save()
+    ims = []
+    txts = []
+    links = []
+    for n in range(4):
+        ims.append('image_%d.jpg' % n)
+        txts.append('text_%d' % n)
+        links.append('image_%d.jpg' % n)
+    html.add_images(ims, txts, links)
+    html.save()

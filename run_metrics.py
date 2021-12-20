@@ -127,8 +127,12 @@ def run_precision_recall(real_feats, fake_feats):
 
 def setup_generator(ckpt_path, w_shift=False):
     g = Generator(256, 512, 8, w_shift=w_shift)
-    ckpt = jt.load(ckpt_path)
-    g.load_state_dict(ckpt)
+    # ckpt = jt.load(ckpt_path)
+    import pickle
+    with open(ckpt_path, 'rb') as f:
+        obj = f.read()
+    weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
+    g.load_state_dict(weights)
     g.eval()
     return g
 

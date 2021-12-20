@@ -34,7 +34,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
 def save_ims(prefix, ims):
     for (ind, im) in enumerate(ims):
         Image.fromarray(im).save((prefix + f'{ind}.png'))
-#if (__name__ == '__main__'):
+if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     parser.add_argument('--obj', type=str, choices=['cat', 'horse', 'church'], help='which StyleGAN2 class to use')
     parser.add_argument('--comp_id', type=int, required=True, help='which principle component to use')

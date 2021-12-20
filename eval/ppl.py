@@ -106,7 +106,7 @@ def compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', c
 
 #     latent_dim = 512
 
-#     ckpt = torch.load(args.ckpt)
+#     ckpt = jt.load(args.ckpt)
 
 #     g = Generator(args.size, latent_dim, 8).to(device)
 #     g.load_state_dict(ckpt['g_ema'])
