@@ -65,9 +65,9 @@ def get_metrics(opt, name, target):
     #torch.cuda.empty_cache()
 
     fake_feats, real_feats = stats_fake['vgg_features'], stats_real['vgg_features']
-    # precision, recall = run_precision_recall, (real_feats, fake_feats)
-    with mp.Pool(1) as p:
-        precision, recall = p.apply(run_precision_recall, (real_feats, fake_feats))
+    precision, recall = run_precision_recall(real_feats, fake_feats)
+    # with mp.Pool(1) as p:
+    #     precision, recall = p.apply(run_precision_recall, (real_feats, fake_feats))
 
     return {
         "fid": fid_value,
@@ -100,8 +100,7 @@ def get_vgg_features(folder, eval_samples, batch_size):
         f.close()
         return features
 
-    with mp.Pool(1) as p:
-        return p.apply(run_vgg, (folder, eval_samples, batch_size,))
+    return run_vgg(folder, eval_samples, batch_size)
 
 
 def run_vgg(folder, eval_samples, batch_size):
@@ -154,7 +153,7 @@ if __name__ == '__main__':
         lst = [s.strip().split(' ') for s in f.readlines()]
         all_models, all_targets = zip(*lst)
 
-    mp.set_start_method('spawn',force=True)
+    # mp.set_start_method('spawn',force=True)
 
     with jt.no_grad():
 
