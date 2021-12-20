@@ -12,7 +12,7 @@ from cleanfid import fid
 
 from eval.ppl import compute_ppl
 from training.networks.stylegan2 import Generator
-
+jt.flags.use_cuda = jt.has_cuda
 
 def save_image_jittor(img, name):
     jt.misc.save_image(
