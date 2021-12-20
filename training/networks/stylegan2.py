@@ -109,7 +109,6 @@ class EqualConv2d(jt.nn.Module):
 
         self.stride = stride
         self.padding = padding
-        print('bias is what', bias)
         if bias:
             self.bias = jt.nn.Parameter(jt.zeros(out_channel))
 
@@ -136,7 +135,7 @@ class EqualConv2d(jt.nn.Module):
 
 class EqualLinear(jt.nn.Module):
     def __init__(
-        self, in_dim, out_dim, bias=False, bias_init=0, lr_mul=1, activation=None
+        self, in_dim, out_dim, bias=True, bias_init=0, lr_mul=1, activation=None
     ):
         super().__init__()
 
@@ -615,7 +614,7 @@ class ConvLayer(jt.nn.Sequential):
         )
 
         if activate:
-            layers.append(FusedLeakyReLU(out_channel, bias=False))
+            layers.append(FusedLeakyReLU(out_channel, bias=bias))
 
         super().__init__(*layers)
 
