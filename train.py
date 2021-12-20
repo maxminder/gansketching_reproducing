@@ -22,8 +22,8 @@ def training_loop():
     # if not opt.disable_eval:
     #     mp.set_start_method('spawn')    #存疑
     # mp.set_start_method('spawn')
-    if not opt.disable_eval:
-        mp.set_start_method('spawn',force=True)  
+    # if not opt.disable_eval:
+    #     mp.set_start_method('spawn',force=True)  
 
     print("dataloader for user sketches")
     # dataloader for user sketches
@@ -110,5 +110,6 @@ def training_loop():
 
 
 if __name__ == "__main__":
+    mp.set_start_method('spawn',force=True)  
     training_loop()
     print('Training was successfully finished.')
