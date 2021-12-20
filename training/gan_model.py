@@ -1,6 +1,7 @@
 import os
 import random
 #import torch
+import pickle
 import jittor as jt
 from training import networks
 from training.networks.transform import OutputTransform
@@ -126,14 +127,23 @@ class GANModel(jt.nn.Module):
 
     def load(self, iters):
         load_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        state_dict_g = jt.load(load_path + "G.pth")
+        # state_dict_g = jt.load(load_path + "G.pth")
+        with open(load_path + "G.pth", 'rb') as f:
+            obj = f.read()
+        state_dict_g = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
         self.netG.load_state_dict(state_dict_g)
 
-        state_dict_d_sketch = jt.load(load_path + "D_sketch.pth")
+        # state_dict_d_sketch = jt.load(load_path + "D_sketch.pth")
+        with open(load_path + "D_sketch.pth", 'rb') as f:
+            obj = f.read()
+        state_dict_d_sketch = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
         self.netD_sketch.load_state_dict(state_dict_d_sketch)
         if self.opt.l_image > 0:
-            state_dict_d_image = jt.load(load_path + "D_image.pth")
+            with open(load_path + "D_image.pth", 'rb') as f:
+                obj = f.read()
+            state_dict_d_image = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
             self.netD_image.load_state_dict(state_dict_d_image)
+        print('load over')
 
     ############################################################################
     # Private helper methods

@@ -1,5 +1,6 @@
 import os
 import numpy as np
+import pickle
 #import torch
 #import torchvision.utils
 import jittor as jt
@@ -125,7 +126,10 @@ class GANTrainer():
         print(f"Resuming model at iteration {iters}")
         self.gan_model.load(iters)
         load_path = os.path.join(self.opt.checkpoints_dir, self.opt.name, f"{iters}_net_")
-        state_dict = jt.load(load_path + "misc.pth")
+       # state_dict = jt.load(load_path + "misc.pth")
+        with open(load_path, 'rb') as f:
+            obj = f.read()
+        state_dict = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
         self.optimizer_G.load_state_dict(state_dict["g_optim"])
         self.optimizer_D.load_state_dict(state_dict["d_optim"])
 

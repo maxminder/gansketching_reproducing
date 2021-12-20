@@ -1,6 +1,6 @@
 import os
 import argparse
-
+import pickle
 import random
 import numpy as np
 # import torch
@@ -92,7 +92,6 @@ if __name__ == '__main__':
 
     netG = Generator(args.size, 512, 8)#.to(device)
     # checkpoint = jt.load(args.ckpt)
-    import pickle
     with open(args.ckpt, 'rb') as f:
         obj = f.read()
     weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
