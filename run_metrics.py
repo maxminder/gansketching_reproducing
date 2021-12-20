@@ -155,7 +155,7 @@ if __name__ == '__main__':
 
     #torch.set_grad_enabled(False)
     with jt.no_grad():
-        mp.set_start_method('spawn')
+        mp.set_start_method('spawn',force=True)
 
         metrics = OrderedDict()
         for name, target in zip(all_models, all_targets):
