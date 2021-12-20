@@ -38,7 +38,6 @@ class GANModel(jt.nn.Module):
             g_loss, generated = self.compute_generator_loss()
             return g_loss, generated
         elif mode == 'discriminator':
-            print('in discriminator')
             d_loss, interm_imgs = self.compute_discriminator_loss(real_sketch, real_image)
             return d_loss, interm_imgs
         elif mode == 'discriminator-regularize':
