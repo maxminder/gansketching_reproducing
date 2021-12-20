@@ -55,12 +55,12 @@ def get_metrics(opt, name, target):
 
     ckpt_path = f"{opt.model_root}/{name}.pth"
     g = setup_generator(ckpt_path)
-
+    print('1')
     fid_value = fid.compute_fid(real_folder+'image', fake_folder+'image', num_workers=0)
-
+    print('2')
     ppl_wend = compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', crop=False, batch_size=25, device='cuda')
     #torch.cuda.empty_cache()
-
+    print('3')
     return {
         "fid": fid_value,
         "ppl": ppl_wend,
