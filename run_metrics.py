@@ -65,7 +65,9 @@ def get_metrics(opt, name, target):
     #torch.cuda.empty_cache()
 
     fake_feats, real_feats = stats_fake['vgg_features'], stats_real['vgg_features']
-    precision, recall = run_precision_recall, (real_feats, fake_feats)
+    # precision, recall = run_precision_recall, (real_feats, fake_feats)
+    with mp.Pool(1) as p:
+        precision, recall = p.apply(run_precision_recall, (real_feats, fake_feats))
 
     return {
         "fid": fid_value,
@@ -154,7 +156,7 @@ if __name__ == '__main__':
 
     #torch.set_grad_enabled(False)
     with jt.no_grad():
-        # mp.set_start_method('spawn',force=True)
+        mp.set_start_method('spawn',force=True)
 
         metrics = OrderedDict()
         for name, target in zip(all_models, all_targets):
