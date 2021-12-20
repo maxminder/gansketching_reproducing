@@ -133,7 +133,7 @@ def setup_generator(ckpt_path, w_shift=False):
     return g
 
 
-#if __name__ == '__main__':
+if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--models_list', type=str)
     parser.add_argument('--output', type=str, default='metric_results.csv')
