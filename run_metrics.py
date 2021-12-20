@@ -154,8 +154,8 @@ if __name__ == '__main__':
         lst = [s.strip().split(' ') for s in f.readlines()]
         all_models, all_targets = zip(*lst)
 
-    mp.set_start_method('spawn')
-    #torch.set_grad_enabled(False)
+    mp.set_start_method('spawn',force=True)
+
     with jt.no_grad():
 
         metrics = OrderedDict()
