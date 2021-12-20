@@ -53,6 +53,7 @@ def training_loop():
         total_iters = 0
     else:
         total_iters = opt.resume_iter
+        trainer.load(total_iters)
 
     optimize_time = 0.1
     for epoch in range(opt.max_epoch):
