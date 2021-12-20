@@ -140,7 +140,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('--models_list', type=str)
     parser.add_argument('--output', type=str, default='metric_results.csv')
-    parser.add_argument('--model_root', type=str, default='./checkpoint/')
+    parser.add_argument('--model_root', type=str, default='./checkpoint')
     parser.add_argument('--eval_root', type=str, default='./data/eval/')
     parser.add_argument('--sample_root', type=str, default='./cache_files/')
     parser.add_argument('--batch_size', type=int, default=50)
