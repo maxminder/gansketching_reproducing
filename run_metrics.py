@@ -58,7 +58,7 @@ def get_metrics(opt, name, target):
     stats_fake = get_stats(opt, g, fake_folder)
     stats_real = get_stats(opt, None, real_folder)
 
-    fid_value = fid.compute_fid(real_folder+'image', fake_folder+'image', num_workers=0)
+    fid_value = fid.compute_fid(real_folder+'image', fake_folder+'image')
 
     ppl_wend = compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', crop=False, batch_size=25, device='cuda')
     del g
