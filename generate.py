@@ -63,7 +63,7 @@ def generate(args, netG, device, mean_latent):
                 ind += 1
 
 
-if __name__ == '__main__':
+#if __name__ == '__main__':
     parser = argparse.ArgumentParser()
 
     parser.add_argument('--save_dir', type=str, default='./output', help="place to save the output")
