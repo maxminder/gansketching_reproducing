@@ -1,9 +1,6 @@
 import math
 import random
 import numpy as np
-# import torch
-# from torch import nn
-# from torch.nn import functional as F
 import jittor as jt
 
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
@@ -18,7 +15,6 @@ class PixelNorm(jt.nn.Module):
 
 
 def make_kernel(k):
-    # k = torch.tensor(k, dtype=torch.float32)
     k = jt.float32(k)
     if k.ndim == 1:
         k = k[None, :] * k[:, None]
@@ -34,7 +30,6 @@ class Upsample(jt.nn.Module):
 
         self.factor = factor
         kernel = make_kernel(kernel) * (factor ** 2)
-        # self.register_buffer("kernel", kernel)
         self.kernel = kernel
         self.kernel.requires_grad = False
         p = kernel.shape[0] - factor

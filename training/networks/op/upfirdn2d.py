@@ -1,6 +1,7 @@
 import os
-
 import jittor as jt
+import time
+
 jt.flags.use_cuda=jt.has_cuda
 
 module_path = os.path.dirname(__file__)
@@ -105,9 +106,13 @@ class UpFirDn2d(jt.Function):
 
         self.g_pad = (g_pad_x0, g_pad_x1, g_pad_y0, g_pad_y1)
 
+        start = time.time()
         out = upfirdn2d_op.upfirdn2d(
             input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1
         )
+        end = time.time()
+        print("114: upfirdn2d_op.upfirdn2d cost {}s.".format(end - start))
+
         out = out.view(-1, channel, out_h, out_w)
 
         return out
