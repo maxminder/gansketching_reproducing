@@ -29,8 +29,6 @@ def make_eval_images(g, save_folder, eval_samples, batch_size, device, to_cpu=Tr
     if not os.path.exists(f'{save_folder}/image/'):
         os.makedirs(f'{save_folder}/image/')
 
-    # g.to(device)
-
     iterations = int(np.ceil(eval_samples / batch_size))
     images_left = eval_samples
     img_count = 0
@@ -55,12 +53,8 @@ def get_metrics(opt, name, target):
 
     ckpt_path = f"{opt.model_root}/{name}.pth"
     g = setup_generator(ckpt_path)
-    print('1')
     fid_value = fid.compute_fid(real_folder+'image', fake_folder+'image')
-    print('2')
     ppl_wend = compute_ppl(g, num_samples=50000, epsilon=1e-4, space='w', sampling='end', crop=False, batch_size=25, device='cuda')
-    #torch.cuda.empty_cache()
-    print('3')
     return {
         "fid": fid_value,
         "ppl": ppl_wend,
@@ -76,7 +70,6 @@ def get_stats(opt, g, folder):
     if not file_cached:
         make_eval_images(g, folder, opt.eval_samples, opt.batch_size, opt.device)
 
-    #torch.cuda.empty_cache()
     vgg_features = get_vgg_features(folder, opt.eval_samples, opt.batch_size)
     return {
         "vgg_features": vgg_features
