@@ -106,12 +106,9 @@ class UpFirDn2d(jt.Function):
 
         self.g_pad = (g_pad_x0, g_pad_x1, g_pad_y0, g_pad_y1)
 
-        start = time.time()
         out = upfirdn2d_op.upfirdn2d(
             input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1
         )
-        end = time.time()
-        print("114: upfirdn2d_op.upfirdn2d cost {}s.".format(end - start))
 
         out = out.view(-1, channel, out_h, out_w)
 
@@ -137,22 +134,25 @@ class UpFirDn2d(jt.Function):
 
 
 def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
-    # if jt.has_cuda:  # cuda版本
-    #     if jt.flags.use_cuda == 0:
-    #         jt.flags.use_cuda = 1
-    #     out = UpFirDn2d.apply(
-    #         input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1])
-    #     )
-    # else:  # cpu版本
-    #     out = upfirdn2d_native(
-    #         input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1]
-    #     )
-    start = time.time()
-    out = upfirdn2d_native(
+    if jt.has_cuda:  # cuda版本
+        if jt.flags.use_cuda == 0:
+            jt.flags.use_cuda = 1
+        start = time.time()
+        out = UpFirDn2d.apply(
+            input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1])
+        )
+        end = time.time()
+        print("145: UpFirDn2d.apply cost {}s.".format(end - start))
+    else:  # cpu版本
+        out = upfirdn2d_native(
             input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1]
         )
-    end = time.time()
-    print("155: upfirdn2d_native cost {}s.".format(end - start))
+    # start = time.time()
+    # out = upfirdn2d_native(
+    #         input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1]
+    #     )
+    # end = time.time()
+    # print("155: upfirdn2d_native cost {}s.".format(end - start))
     return out
 
 
