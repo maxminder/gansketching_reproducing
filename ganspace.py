@@ -7,14 +7,13 @@ import random
 import numpy as np
 from PIL import Image
 from training.networks.stylegan2 import Generator
+
 jt.flags.use_cuda = jt.has_cuda
 
 def gen_principal_components(dump_name):
     'Get principle components from GANSpace.'
     with np.load(dump_name) as data:
-        # lat_comp = torch.from_numpy(data['lat_comp']).to(device)
-        # lat_mean = torch.from_numpy(data['lat_mean']).to(device)
-        lat_comp = jt.float32(data['lat_comp'])    #to device?
+        lat_comp = jt.float32(data['lat_comp'])
         lat_mean = jt.float32(data['lat_mean'])
         lat_std = data['lat_stdev']
     return (lat_comp, lat_mean, lat_std)
@@ -25,8 +24,6 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
         latents = latents[:, None, :].repeat(1, 18, 1)
     latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
     im = g([latents], input_is_latent=True, truncation=trunc, truncation_latent=mean_latent)[0]
-    #im = im.cpu().numpy().transpose((0, 2, 3, 1))
-    print(im.shape)
     im = im.numpy().transpose((0, 2, 3, 1))
     im = np.clip(((im + 1) / 2), 0, 1)
     return (im * 255).astype(np.uint8)
@@ -34,6 +31,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
 def save_ims(prefix, ims):
     for (ind, im) in enumerate(ims):
         Image.fromarray(im).save((prefix + f'{ind}.png'))
+
 if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     parser.add_argument('--obj', type=str, choices=['cat', 'horse', 'church'], help='which StyleGAN2 class to use')
@@ -55,12 +53,10 @@ if (__name__ == '__main__'):
         if (args.seed is not None):
             random.seed(args.seed)
             jt.set_seed(args.seed)
-            #torch.cuda.manual_seed_all(args.seed)
             jt.set_global_seed(args.seed)
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
-        #checkpoint = torch.load(args.ckpt, map_location='cpu')
         checkpoint = jt.load(args.ckpt)
         netG.load_parameters(checkpoint)
         if (args.truncation < 1):
@@ -74,11 +70,9 @@ if (__name__ == '__main__'):
         w_comp = lat_comp[k]
         w_std = lat_std[k]
         if (args.fixed_z is None):
-            #z = jt.randn(args.samples, 512).to(device)
             z = jt.randn(args.samples, 512)
         else:
-            #z = jt.load(args.fixed_z, map_location='cpu').to(device)
-            z = jt.load(args.fixed_z, map_location='cpu')
+            z = jt.load(args.fixed_z)
         latents = netG.get_latent(z)
         ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, 0, layers, trunc=args.truncation)
         save_ims(f'./{args.save_dir}/before_', ims)
