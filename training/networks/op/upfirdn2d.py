@@ -20,7 +20,7 @@ class UpFirDn2dBackward(jt.Function):
 
         grad_output = grad_output.reshape(-1, out_size[0], out_size[1], 1)
 
-        grad_input = jt.array(upfirdn2d_op.upfirdn2d(
+        grad_input = upfirdn2d_op.upfirdn2d(
             grad_output,
             grad_kernel,
             down_x,
@@ -31,7 +31,7 @@ class UpFirDn2dBackward(jt.Function):
             g_pad_x1,
             g_pad_y0,
             g_pad_y1,
-        ).fetch_sync())
+        )
         grad_input = grad_input.view(in_size[0], in_size[1], in_size[2], in_size[3])
 
         self._kernel = kernel
@@ -56,7 +56,7 @@ class UpFirDn2dBackward(jt.Function):
 
         gradgrad_input = gradgrad_input.reshape(-1, self.in_size[2], self.in_size[3], 1)
 
-        gradgrad_out = jt.array(upfirdn2d_op.upfirdn2d(
+        gradgrad_out = upfirdn2d_op.upfirdn2d(
             gradgrad_input,
             kernel,
             self.up_x,
@@ -67,7 +67,7 @@ class UpFirDn2dBackward(jt.Function):
             self.pad_x1,
             self.pad_y0,
             self.pad_y1,
-        ).fetch_sync())
+        )
         gradgrad_out = gradgrad_out.view(
             self.in_size[0], self.in_size[1], self.out_size[0], self.out_size[1]
         )
@@ -108,10 +108,6 @@ class UpFirDn2d(jt.Function):
         out = upfirdn2d_op.upfirdn2d(
             input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1
         )
-        print(type(out))
-        out = jt.array(upfirdn2d_op.upfirdn2d(
-            input, kernel, up_x, up_y, down_x, down_y, pad_x0, pad_x1, pad_y0, pad_y1
-        ).fetch_sync())
         out = out.view(-1, channel, out_h, out_w)
 
         return out
