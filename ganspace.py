@@ -13,7 +13,7 @@ jt.flags.use_cuda = jt.has_cuda
 def gen_principal_components(dump_name):
     'Get principle components from GANSpace.'
     with np.load(dump_name) as data:
-        lat_comp = jt.float32(data['lat_comp'])    #to device?
+        lat_comp = jt.float32(data['lat_comp'])
         lat_mean = jt.float32(data['lat_mean'])
         lat_std = data['lat_stdev']
     return (lat_comp, lat_mean, lat_std)
@@ -32,6 +32,7 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
 def save_ims(prefix, ims):
     for (ind, im) in enumerate(ims):
         Image.fromarray(im).save((prefix + f'{ind}.png'))
+
 if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     parser.add_argument('--obj', type=str, choices=['cat', 'horse', 'church'], help='which StyleGAN2 class to use')
@@ -72,7 +73,7 @@ if (__name__ == '__main__'):
         if (args.fixed_z is None):
             z = jt.randn(args.samples, 512)
         else:
-            z = jt.load(args.fixed_z, map_location='cpu')
+            z = jt.load(args.fixed_z)
         latents = netG.get_latent(z)
         ims = apply_shift(netG, mean_latent, latents, w_comp, w_std, 0, layers, trunc=args.truncation)
         save_ims(f'./{args.save_dir}/before_', ims)
