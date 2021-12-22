@@ -137,17 +137,22 @@ class UpFirDn2d(jt.Function):
 
 
 def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
-    # print(input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1]))
-    if jt.has_cuda:  # cuda版本
-        if jt.flags.use_cuda == 0:
-            jt.flags.use_cuda = 1
-        out = UpFirDn2d.apply(
-            input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1])
-        )
-    else:  # cpu版本
-        out = upfirdn2d_native(
+    # if jt.has_cuda:  # cuda版本
+    #     if jt.flags.use_cuda == 0:
+    #         jt.flags.use_cuda = 1
+    #     out = UpFirDn2d.apply(
+    #         input, kernel, (up, up), (down, down), (pad[0], pad[1], pad[0], pad[1])
+    #     )
+    # else:  # cpu版本
+    #     out = upfirdn2d_native(
+    #         input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1]
+    #     )
+    start = time.time()
+    out = upfirdn2d_native(
             input, kernel, up, up, down, down, pad[0], pad[1], pad[0], pad[1]
         )
+    end = time.time()
+    print("155: upfirdn2d_native cost {}s.".format(end - start))
     return out
 
 
