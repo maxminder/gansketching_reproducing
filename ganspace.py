@@ -24,7 +24,6 @@ def apply_shift(g, mean_latent, latents, w_comp, w_std, s, layers, w_plus=False,
         latents = latents[:, None, :].repeat(1, 18, 1)
     latents[:, layers, :] = (latents[:, layers, :] + ((w_comp[:, None, :] * s) * w_std))
     im = g([latents], input_is_latent=True, truncation=trunc, truncation_latent=mean_latent)[0]
-    print(im.shape)
     im = im.numpy().transpose((0, 2, 3, 1))
     im = np.clip(((im + 1) / 2), 0, 1)
     return (im * 255).astype(np.uint8)
