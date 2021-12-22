@@ -102,16 +102,13 @@ class EqualConv2d(jt.nn.Module):
     ):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(
-            jt.randn(out_channel, in_channel, kernel_size, kernel_size)
-        )
+        self.weight = jt.randn(out_channel, in_channel, kernel_size, kernel_size)
         self.scale = 1 / math.sqrt(in_channel * kernel_size ** 2)
 
         self.stride = stride
         self.padding = padding
         if bias:
-            self.bias = jt.nn.Parameter(jt.zeros(out_channel))
-
+            self.bias = jt.zeros(out_channel)
         else:
             self.bias = None
 
@@ -139,10 +136,10 @@ class EqualLinear(jt.nn.Module):
     ):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(jt.randn(out_dim, in_dim)/lr_mul)
+        self.weight = jt.randn(out_dim, in_dim)/lr_mul
 
         if bias:
-            self.bias = jt.nn.Parameter(jt.init.constant(out_dim,value=bias_init))
+            self.bias = jt.init.constant(out_dim,value=bias_init)
         else:
             self.bias = None
 
@@ -208,9 +205,7 @@ class ModulatedConv2d(jt.nn.Module):
         self.scale = 1 / math.sqrt(fan_in)
         self.padding = kernel_size // 2
 
-        self.weight = jt.nn.Parameter(
-            jt.randn(1, out_channel, in_channel, kernel_size, kernel_size)
-        )
+        self.weight = jt.randn(1, out_channel, in_channel, kernel_size, kernel_size)
 
         self.modulation = EqualLinear(style_dim, in_channel, bias_init=1)
 
@@ -285,12 +280,11 @@ class NoiseInjection(jt.nn.Module):
     def __init__(self):
         super().__init__()
 
-        self.weight = jt.nn.Parameter(jt.zeros(1))
+        self.weight = jt.zeros(1)
 
     def execute(self, image, noise=None):
         if noise is None:
             batch, _, height, width = image.shape
-            # noise = image.new_empty(batch, 1, height, width).normal_()
             noise = jt.init.gauss((batch, 1, height, width))
 
         return image + self.weight * noise
@@ -300,7 +294,7 @@ class ConstantInput(jt.nn.Module):
     def __init__(self, channel, size=4):
         super().__init__()
 
-        self.input = jt.nn.Parameter(jt.randn(1, channel, size, size))
+        self.input = jt.randn(1, channel, size, size)
 
     def execute(self, input):
         batch = input.shape[0]
@@ -312,7 +306,7 @@ class ConstantInput(jt.nn.Module):
 class WShift(jt.nn.Module):
     def __init__(self, style_dim):
         super().__init__()
-        self.w_shift = jt.nn.Parameter(jt.zeros(1, style_dim))
+        self.w_shift = jt.zeros(1, style_dim)
 
     def exxecute(self, input):
         out = input + self.w_shift
@@ -343,14 +337,11 @@ class StyledConv(jt.nn.Module):
         )
 
         self.noise = NoiseInjection()
-        # self.bias = nn.Parameter(torch.zeros(1, out_channel, 1, 1))
-        # self.activate = ScaledLeakyReLU(0.2)
         self.activate = FusedLeakyReLU(out_channel)
 
     def execute(self, input, style, noise=None):
         out = self.conv(input, style)
         out = self.noise(out, noise=noise)
-        # out = out + self.bias
         out = self.activate(out)
 
         return out
@@ -364,7 +355,7 @@ class ToRGB(jt.nn.Module):
             self.upsample = Upsample(blur_kernel)
 
         self.conv = ModulatedConv2d(in_channel, 3, 1, style_dim, demodulate=False)
-        self.bias = jt.nn.Parameter(jt.zeros((1, 3, 1, 1)))
+        self.bias = jt.zeros((1, 3, 1, 1))
 
     def execute(self, input, style, skip=None):
         out = self.conv(input, style)
