@@ -5,4 +5,4 @@ python train.py \
 --dataroot_image ~/jittor/gansketching_reproducing/data/image/church --l_image 0.7 \
 --g_pretrained ~/jittor/gansketching_reproducing/pretrained/stylegan2-church/netG.pth \
 --d_pretrained ~/jittor/gansketching_reproducing/pretrained/stylegan2-church/netD.pth \
---max_iter 150001 --disable_eval --diffaug_policy translation --no_wandb --resume_iter 70000\
+--max_iter 150001 --disable_eval --diffaug_policy translation --no_wandb --resume_iter 82500\
