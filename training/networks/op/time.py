@@ -4,8 +4,8 @@ from jittor.models import resnet50
 from upfirdn2d import upfirdn2d
 jt.flags.use_cuda = jt.has_cuda
 
-warmup = 100
-rerun = 1000
+warmup = 1000
+rerun = 10000
 batch_size = 50
 data = jt.random((batch_size, 3, 256, 256))
 kernel = jt.random((4, 4))
