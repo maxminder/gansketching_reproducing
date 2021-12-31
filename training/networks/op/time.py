@@ -1,7 +1,7 @@
 import time
 import jittor as jt
 from jittor.models import resnet50
-from op.upfirdn2d import upfirdn2d
+from training.networks.op.upfirdn2d import upfirdn2d
 jt.flags.use_cuda = jt.has_cuda
 
 warmup = 100
