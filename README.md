@@ -98,6 +98,36 @@ cd GANSketching
 
 This command runs the customized model specified by `ckpt`, and generates samples to `save_dir`.
 
+python generate.py --ckpt /root/lcs/new/gansketching_reproducing/checkpoint/teaser_cat_augment/100000_net_G.pth --save_dir output/samples_teaser_cat --seed 1
+
+python generate.py --ckpt ~/jittor/gansketching_reproducing/pretrained/stylegan2-cat/netG.pth --save_dir output/samples_cat --seed 1
+
+python generate.py --ckpt checkpoint/church_augment/150000_net_G.pth --save_dir output/church_augment --samples 2500
+
+python3 -m pytorch_fid output/church_augment data/eval/gabled_church/image --device cuda
+
+python generate.py --ckpt checkpoint/church_noaugment/82500_net_G.pth --save_dir output/church_noaugment --samples 2500
+
+python3 -m pytorch_fid output/church_noaugment data/eval/gabled_church/image --device cuda
+
+python generate.py --ckpt checkpoint/standing_cat_augment/77500_net_G.pth --save_dir output/standing_cat_augment --samples 2500
+
+python3 -m pytorch_fid output/standing_cat_augment data/eval/standing_cat/image --device cuda
+
+python generate.py --ckpt checkpoint/standing_cat_noaugment/92500_net_G.pth --save_dir output/standing_cat_noaugment --seed 1
+
+python3 -m pytorch_fid output/standing_cat_augment data/eval/standing_cat/image --device cuda
+
+python generate.py --ckpt checkpoint/horse_riders_augment/75000_net_G.pth --save_dir output/horse_riders_augment --samples 2500
+
+python generate.py --ckpt checkpoint/church_augment_weight/75000_net_G.pth --save_dir output/church_augment_weight --samples 2500
+
+python3 -m pytorch_fid output/church_augment_weight data/eval/gabled_church/image --device cuda
+
+![image-20211221131143787](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211221131143787.png)
+
+![image-20211221135652679](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211221135652679.png)
+
 ```
 # generates samples from the "standing cat" model.
 python generate.py --ckpt weights/photosketch_standing_cat_noaug.pth --save_dir output/samples_standing_cat
@@ -109,9 +139,15 @@ python generate.py --ckpt weights/by_author_cat_aug.pth --save_dir output/sample
 python generate.py --ckpt weights/by_author_face0_aug.pth --save_dir output/samples_ffhq_face0 --size 1024 --batch_size 20
 ```
 
-### Latent space edits by GANSpace
+
+
+### ![image-20211221140354180](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211221140354180.png)Latent space edits by GANSpace
 
 Our model preserves the latent space editability of the original model. Our models can apply the same edits using the latents reported in Härkönen et.al. ([GANSpace](https://github.com/harskish/ganspace)).
+
+python ganspace.py --obj cat --comp_id 45 --scalar 60 --layers 5,7 --ckpt checkpoint/teaser_cat_augment/0_net_G.pth --save_dir output/ganspace_eye_standing_cat
+
+python ganspace.py --obj cat --comp_id 1 --scalar 10 --layers 2,5 --ckpt checkpoint/teaser_cat_augment/0_net_G.pth --save_dir output/ganspace_fur_standing_cat
 
 ```
 # add fur to the standing cats
@@ -150,8 +186,11 @@ bash data/download_lsun.sh
 
 To train FFHQ models with image regularization, please download the [FFHQ dataset](https://github.com/NVlabs/ffhq-dataset) using this [link](https://drive.google.com/file/d/1WvlAIvuochQn_L_f9p3OdFdTiSLlnnhv/view?usp=sharing). This is the zip file of 70,000 images at 1024x1024 resolution. Unzip the files, , rename the `images1024x1024` folder to `ffhq` and place it in `./data/image/`.
 
+### Training Scripts 2 7 7 7 7 7 7 2 4
 
-### Training Scripts
+![image-20211218164557858](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211218164557858.png)
+
+![image-20211218165114348](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211218165114348.png)
 
 The example training configurations are specified using the scripts in `scripts` folder. Use the following commands to launch trainings.
 
@@ -167,9 +206,14 @@ bash scripts/train_quickdraw_single_horse0.sh
 
 # Train on sketches of faces (1024px)
 bash scripts/train_authorsketch_ffhq0.sh
+
+bash scripts/train_church.sh
+bash scripts/train_standing_cat.sh
 ```
 
 The training progress is tracked using `wandb` by default. To disable wandb logging, please add the `--no_wandb` tag to the training script.
+
+![image-20211217172442686](C:\Users\86199\AppData\Roaming\Typora\typora-user-images\image-20211217172442686.png)
 
 ### Evaluations
 
@@ -181,6 +225,8 @@ bash data/download_eval_data.sh
 ```
 
 Use the following script to evaluate the models, the results will be saved in a csv file specified by the ``--output`` flag. ``--models_list`` should contain a list of tuple of model weight paths and evaluation data. Please see `weights/eval_list` for example.
+
+python run_metrics.py --models_list /root/lcs/new/gansketching_reproducing/model_list --model_root /root/lcs/new/gansketching_reproducing/checkpoint --eval_root /root/lcs/new/gansketching_reproducing/data/eval/ --sample_root /root/lcs/new/gansketching_reproducing/cache_files/ --output metric_results.csv
 
 ```bash
 python run_metrics.py --models_list weights/eval_list --output metric_results.csv
