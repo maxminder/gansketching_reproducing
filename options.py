@@ -30,7 +30,7 @@ def get_opt():
     parser.add_argument("--max_iter", type=int, default=75001, help="which iteration to stop training")
     parser.add_argument("--max_epoch", type=int, default=1000000, help="max number of training epoch")
 
-    parser.add_argument("--batch", type=int, default=4, help="batch size used for training")
+    parser.add_argument("--batch", type=int, default=1, help="batch size used for training")
     parser.add_argument("--size", type=int, default=256, help="image size for StyleGAN2")
     parser.add_argument("--z_dim", type=int, default=512, help="dimensionality of the noise z")
     parser.add_argument("--n_mlp", type=int, default=8, help="number of layers for the style mapping network")
@@ -56,7 +56,7 @@ def get_opt():
 
     parser.add_argument("--transform_real", type=str, default='to3ch', help="sequence of operations to transform the real sketches before D")
     parser.add_argument("--transform_fake", type=str, default='toSketch,to3ch', help="sequence of operations to transform the fake images before D")
-    parser.add_argument("--photosketch_path", type=str, default='./pretrained/photosketch.pth', help="path to the photosketch pre-trained model")
+    parser.add_argument("--photosketch_path", type=str, default=f'/root/jittor/gansketching_reproducing/pretrained/photosketch.pth', help="path to the photosketch pre-trained model")
     parser.add_argument("--diffaug_policy", type=str, default='', help='sequence of operations used for differentiable augmentation')
 
     opt = parser.parse_args()

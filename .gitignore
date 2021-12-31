@@ -138,3 +138,5 @@ cache_eval/
 output/
 .vscode/
 *.pth
+data/
+pretrained/

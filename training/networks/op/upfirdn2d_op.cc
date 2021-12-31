@@ -1,28 +1,29 @@
-// Copyright (c) 2019, NVIDIA Corporation. All rights reserved.
-//
-// This work is made available under the Nvidia Source Code License-NC.
-// To view a copy of this license, visit
-// https://nvlabs.github.io/stylegan2/license.html
-
-#include <torch/types.h>
-
-#include <ATen/ATen.h>
-#include <ATen/AccumulateType.h>
-#include <ATen/cuda/CUDAApplyUtils.cuh>
-#include <ATen/cuda/CUDAContext.h>
-
+#include "var.h"
+#include "upfirdn2d_op.h"
 #include <cuda.h>
 #include <cuda_runtime.h>
 
-static __host__ __device__ __forceinline__ int floor_div(int a, int b) {
-  int c = a / b;
+namespace jittor {
+#ifndef JIT
 
-  if (c * b > a) {
-    c--;
-  }
+Upfirdn2dOp::Upfirdn2dOp(Var* input, Var* kernel, int up_x, int up_y, int down_x, int down_y, int pad_x0, int pad_x1, int pad_y0, int pad_y1) : input(input), kernel(kernel), up_x(up_x), up_y(up_y), down_x(down_x), down_y(down_y), pad_x0(pad_x0), pad_x1(pad_x1), pad_y0(pad_y0), pad_y1(pad_y1) {
+    flags.set(NodeFlags::_cuda, 1);
+    flags.set(NodeFlags::_cpu, 1);
 
-  return c;
+    int out_h = (input->shape[1] * up_y + pad_y0 + pad_y1 - kernel->shape[0] + down_y) / down_y;
+    int out_w = (input->shape[2] * up_x + pad_x0 + pad_x1 - kernel->shape[1] + down_x) / down_x;
+
+    output = create_output({input->shape[0], out_h, out_w, input->shape[3]}, input->dtype());
 }
+
+
+void Upfirdn2dOp::jit_prepare(JK& jk) {
+    jk << _CS("[To:") << output->dtype();
+    jk << _CS("][Ti:") << input->dtype();
+    jk << _CS("][Tk:") << kernel->dtype()<<']';
+}
+
+#else // JIT
 
 struct UpFirDn2DKernelParams {
   int up_x;
@@ -46,10 +47,18 @@ struct UpFirDn2DKernelParams {
   int loop_x;
 };
 
+static __host__ __device__ __forceinline__ int floor_div(int a, int b) {
+  int c = a / b;
+
+  if (c * b > a) {
+    c--;
+  }
+
+  return c;
+}
+
 template <typename scalar_t>
-__global__ void upfirdn2d_kernel_large(scalar_t *out, const scalar_t *input,
-                                       const scalar_t *kernel,
-                                       const UpFirDn2DKernelParams p) {
+__global__ void upfirdn2d_kernel_large(scalar_t *out, const scalar_t *input, const scalar_t *kernel, const UpFirDn2DKernelParams p) {
   int minor_idx = blockIdx.x * blockDim.x + threadIdx.x;
   int out_y = minor_idx / p.minor_dim;
   minor_idx -= out_y * p.minor_dim;
@@ -104,8 +113,7 @@ __global__ void upfirdn2d_kernel_large(scalar_t *out, const scalar_t *input,
   }
 }
 
-template <typename scalar_t, int up_x, int up_y, int down_x, int down_y,
-          int kernel_h, int kernel_w, int tile_out_h, int tile_out_w>
+template <typename scalar_t, int up_x, int up_y, int down_x, int down_y, int kernel_h, int kernel_w, int tile_out_h, int tile_out_w>
 __global__ void upfirdn2d_kernel(scalar_t *out, const scalar_t *input,
                                  const scalar_t *kernel,
                                  const UpFirDn2DKernelParams p) {
@@ -206,164 +214,130 @@ __global__ void upfirdn2d_kernel(scalar_t *out, const scalar_t *input,
   }
 }
 
-torch::Tensor upfirdn2d_op(const torch::Tensor &input,
-                           const torch::Tensor &kernel, int up_x, int up_y,
-                           int down_x, int down_y, int pad_x0, int pad_x1,
-                           int pad_y0, int pad_y1) {
-  int curDevice = -1;
-  cudaGetDevice(&curDevice);
-  cudaStream_t stream = at::cuda::getCurrentCUDAStream(curDevice);
+void Upfirdn2dOp::jit_run() {
+    auto x = input;
+    auto k = kernel;
 
-  UpFirDn2DKernelParams p;
+    auto* __restrict__ yp = output->ptr<float32>();
+    auto* __restrict__ xp = input->ptr<float32>();
+    auto* __restrict__ kp = kernel->ptr<float32>();
 
-  auto x = input.contiguous();
-  auto k = kernel.contiguous();
+    int mode = -1;
 
-  p.major_dim = x.size(0);
-  p.in_h = x.size(1);
-  p.in_w = x.size(2);
-  p.minor_dim = x.size(3);
-  p.kernel_h = k.size(0);
-  p.kernel_w = k.size(1);
-  p.up_x = up_x;
-  p.up_y = up_y;
-  p.down_x = down_x;
-  p.down_y = down_y;
-  p.pad_x0 = pad_x0;
-  p.pad_x1 = pad_x1;
-  p.pad_y0 = pad_y0;
-  p.pad_y1 = pad_y1;
+    UpFirDn2DKernelParams p;
+    p.major_dim = x->shape[0];
+    p.in_h = x->shape[1];
+    p.in_w = x->shape[2];
+    p.minor_dim = x->shape[3];
+    p.kernel_h = k->shape[0];
+    p.kernel_w = k->shape[1];
+    p.up_x = up_x;
+    p.up_y = up_y;
+    p.down_x = down_x;
+    p.down_y = down_y;
+    p.pad_x0 = pad_x0;
+    p.pad_x1 = pad_x1;
+    p.pad_y0 = pad_y0;
+    p.pad_y1 = pad_y1;
 
-  p.out_h = (p.in_h * p.up_y + p.pad_y0 + p.pad_y1 - p.kernel_h + p.down_y) /
-            p.down_y;
-  p.out_w = (p.in_w * p.up_x + p.pad_x0 + p.pad_x1 - p.kernel_w + p.down_x) /
-            p.down_x;
+    p.out_h = (p.in_h * p.up_y + p.pad_y0 + p.pad_y1 - p.kernel_h + p.down_y) / p.down_y;
+    p.out_w = (p.in_w * p.up_x + p.pad_x0 + p.pad_x1 - p.kernel_w + p.down_x) / p.down_x;
 
-  auto out =
-      at::empty({p.major_dim, p.out_h, p.out_w, p.minor_dim}, x.options());
+    int tile_out_h = -1;
+    int tile_out_w = -1;
 
-  int mode = -1;
+    if (p.up_x == 1 && p.up_y == 1 && p.down_x == 1 && p.down_y == 1 && p.kernel_h <= 4 && p.kernel_w <= 4) {
+        mode = 1;
+        tile_out_h = 16;
+        tile_out_w = 64;
+    }
 
-  int tile_out_h = -1;
-  int tile_out_w = -1;
+    if (p.up_x == 1 && p.up_y == 1 && p.down_x == 1 && p.down_y == 1 && p.kernel_h <= 3 && p.kernel_w <= 3) {
+        mode = 2;
+        tile_out_h = 16;
+        tile_out_w = 64;
+    }
 
-  if (p.up_x == 1 && p.up_y == 1 && p.down_x == 1 && p.down_y == 1 &&
-      p.kernel_h <= 4 && p.kernel_w <= 4) {
-    mode = 1;
-    tile_out_h = 16;
-    tile_out_w = 64;
-  }
+    if (p.up_x == 2 && p.up_y == 2 && p.down_x == 1 && p.down_y == 1 && p.kernel_h <= 4 && p.kernel_w <= 4) {
+        mode = 3;
+        tile_out_h = 16;
+        tile_out_w = 64;
+    }
 
-  if (p.up_x == 1 && p.up_y == 1 && p.down_x == 1 && p.down_y == 1 &&
-      p.kernel_h <= 3 && p.kernel_w <= 3) {
-    mode = 2;
-    tile_out_h = 16;
-    tile_out_w = 64;
-  }
+    if (p.up_x == 2 && p.up_y == 2 && p.down_x == 1 && p.down_y == 1 && p.kernel_h <= 2 && p.kernel_w <= 2) {
+        mode = 4;
+        tile_out_h = 16;
+        tile_out_w = 64;
+    }
 
-  if (p.up_x == 2 && p.up_y == 2 && p.down_x == 1 && p.down_y == 1 &&
-      p.kernel_h <= 4 && p.kernel_w <= 4) {
-    mode = 3;
-    tile_out_h = 16;
-    tile_out_w = 64;
-  }
+    if (p.up_x == 1 && p.up_y == 1 && p.down_x == 2 && p.down_y == 2 && p.kernel_h <= 4 && p.kernel_w <= 4) {
+        mode = 5;
+        tile_out_h = 8;
+        tile_out_w = 32;
+    }
 
-  if (p.up_x == 2 && p.up_y == 2 && p.down_x == 1 && p.down_y == 1 &&
-      p.kernel_h <= 2 && p.kernel_w <= 2) {
-    mode = 4;
-    tile_out_h = 16;
-    tile_out_w = 64;
-  }
+    if (p.up_x == 1 && p.up_y == 1 && p.down_x == 2 && p.down_y == 2 && p.kernel_h <= 2 && p.kernel_w <= 2) {
+        mode = 6;
+        tile_out_h = 8;
+        tile_out_w = 32;
+    }
 
-  if (p.up_x == 1 && p.up_y == 1 && p.down_x == 2 && p.down_y == 2 &&
-      p.kernel_h <= 4 && p.kernel_w <= 4) {
-    mode = 5;
-    tile_out_h = 8;
-    tile_out_w = 32;
-  }
+    dim3 block_size;
+    dim3 grid_size;
 
-  if (p.up_x == 1 && p.up_y == 1 && p.down_x == 2 && p.down_y == 2 &&
-      p.kernel_h <= 2 && p.kernel_w <= 2) {
-    mode = 6;
-    tile_out_h = 8;
-    tile_out_w = 32;
-  }
-
-  dim3 block_size;
-  dim3 grid_size;
-
-  if (tile_out_h > 0 && tile_out_w > 0) {
-    p.loop_major = (p.major_dim - 1) / 16384 + 1;
-    p.loop_x = 1;
-    block_size = dim3(32 * 8, 1, 1);
-    grid_size = dim3(((p.out_h - 1) / tile_out_h + 1) * p.minor_dim,
+    if (tile_out_h > 0 && tile_out_w > 0) {
+        p.loop_major = (p.major_dim - 1) / 16384 + 1;
+        p.loop_x = 1;
+        block_size = dim3(32 * 8, 1, 1);
+        grid_size = dim3(((p.out_h - 1) / tile_out_h + 1) * p.minor_dim,
                      (p.out_w - 1) / (p.loop_x * tile_out_w) + 1,
                      (p.major_dim - 1) / p.loop_major + 1);
-  } else {
-    p.loop_major = (p.major_dim - 1) / 16384 + 1;
-    p.loop_x = 4;
-    block_size = dim3(4, 32, 1);
-    grid_size = dim3((p.out_h * p.minor_dim - 1) / block_size.x + 1,
+    } else {
+        p.loop_major = (p.major_dim - 1) / 16384 + 1;
+        p.loop_x = 4;
+        block_size = dim3(4, 32, 1);
+        grid_size = dim3((p.out_h * p.minor_dim - 1) / block_size.x + 1,
                      (p.out_w - 1) / (p.loop_x * block_size.y) + 1,
                      (p.major_dim - 1) / p.loop_major + 1);
-  }
-
-  AT_DISPATCH_FLOATING_TYPES_AND_HALF(x.scalar_type(), "upfirdn2d_cuda", [&] {
-    switch (mode) {
-    case 1:
-      upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    case 2:
-      upfirdn2d_kernel<scalar_t, 1, 1, 1, 1, 3, 3, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    case 3:
-      upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 4, 4, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    case 4:
-      upfirdn2d_kernel<scalar_t, 2, 2, 1, 1, 2, 2, 16, 64>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    case 5:
-      upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    case 6:
-      upfirdn2d_kernel<scalar_t, 1, 1, 2, 2, 4, 4, 8, 32>
-          <<<grid_size, block_size, 0, stream>>>(out.data_ptr<scalar_t>(),
-                                                 x.data_ptr<scalar_t>(),
-                                                 k.data_ptr<scalar_t>(), p);
-
-      break;
-
-    default:
-      upfirdn2d_kernel_large<scalar_t><<<grid_size, block_size, 0, stream>>>(
-          out.data_ptr<scalar_t>(), x.data_ptr<scalar_t>(),
-          k.data_ptr<scalar_t>(), p);
     }
-  });
 
-  return out;
+   
+        switch (mode) {
+        case 1:
+        upfirdn2d_kernel<float32, 1, 1, 1, 1, 4, 4, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        case 2:
+        upfirdn2d_kernel<float32, 1, 1, 1, 1, 3, 3, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        case 3:
+        upfirdn2d_kernel<float32, 2, 2, 1, 1, 4, 4, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        case 4:
+        upfirdn2d_kernel<float32, 2, 2, 1, 1, 2, 2, 16, 64><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        case 5:
+        upfirdn2d_kernel<float32, 1, 1, 2, 2, 4, 4, 8, 32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        case 6:
+        upfirdn2d_kernel<float32, 1, 1, 2, 2, 4, 4, 8, 32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+
+        break;
+
+        default:
+        upfirdn2d_kernel_large<float32><<<grid_size, block_size, 0>>>(yp, xp, kp, p);
+      }
+
 }
+#endif // JIT
+
+} // jittor

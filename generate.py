@@ -3,29 +3,27 @@ import argparse
 
 import random
 import numpy as np
-#import torch
-#from torchvision import utils
 import jittor as jt
 from training.networks.stylegan2 import Generator
-
+from PIL import Image
+import math
+jt.flags.use_cuda = jt.has_cuda
 
 def save_image_pytorch(img, name):
     """Helper function to save torch tensor into an image file."""
-    jt.misc.save_image(
-        img,
-        name,
-        nrow=1,
-        padding=0,
-        normalize=True,
-        range=(-1, 1),
-    )
+    img = jt.clamp(img, -1, 1)
+    img = (img + 1.) / 2.
+
+    grid = img
+    
+    ndarr = (grid*255+0.5).clamp(0, 255).permute(1, 2, 0).uint8().numpy()
+    im = Image.fromarray(ndarr)
+    im.save(name, format=None)
 
 
 def generate(args, netG, device, mean_latent):
     """Generates images from a generator."""
-    # loading a w-latent direction shift if given
     if args.w_shift is not None:
-        #w_shift = torch.from_numpy(np.load(args.w_shift)).to(device)
         w_shift = jt.float32(np.load(args.w_shift))
         w_shift = w_shift[None, :]
         mean_latent = mean_latent + w_shift
@@ -36,7 +34,6 @@ def generate(args, netG, device, mean_latent):
     with jt.no_grad():
         netG.eval()
 
-        # Generate images from a file of input noises
         if args.fixed_z is not None:
             sample_z = jt.load(args.fixed_z) + w_shift
             for start in range(0, sample_z.size(0), args.batch_size):
@@ -48,12 +45,10 @@ def generate(args, netG, device, mean_latent):
                     ind += 1
             return
 
-        # Generate image by sampling input noises
         for start in range(0, args.samples, args.batch_size):
             end = min(start + args.batch_size, args.samples)
             batch_sz = end - start
             sample_z = jt.randn(batch_sz, 512) + w_shift
-
             sample, _ = netG([sample_z], truncation=args.truncation, truncation_latent=mean_latent)
 
             for s in sample:
@@ -83,14 +78,19 @@ if __name__ == '__main__':
     if args.seed is not None:
         random.seed(args.seed)
         jt.set_seed(args.seed)
+        jt.set_global_seed(args.seed)
 
     if not os.path.exists(args.save_dir):
         os.makedirs(args.save_dir)
 
-    netG = Generator(args.size, 512, 8)#.to(device)
-    checkpoint = jt.load(args.ckpt)
+    netG = Generator(args.size, 512, 8)
+    #checkpoint = jt.load(args.ckpt)
+    import pickle
+    with open(args.ckpt, 'rb') as f:
+        obj = f.read()
+    weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
 
-    netG.load_state_dict(checkpoint)
+    netG.load_state_dict(weights)
 
     # get mean latent if truncation is applied
     if args.truncation < 1:
