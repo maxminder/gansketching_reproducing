@@ -84,8 +84,11 @@ if __name__ == '__main__':
         os.makedirs(args.save_dir)
 
     netG = Generator(args.size, 512, 8)
-    checkpoint = jt.load(args.ckpt)
-
+    #checkpoint = jt.load(args.ckpt)
+    import pickle
+    with open(args.ckpt, 'rb') as f:
+        obj = f.read()
+    checkpoint = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
     netG.load_state_dict(checkpoint)
 
     # get mean latent if truncation is applied
