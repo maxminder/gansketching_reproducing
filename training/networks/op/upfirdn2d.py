@@ -1,6 +1,5 @@
 import os
 import jittor as jt
-import time
 
 jt.flags.use_cuda=jt.has_cuda
 
