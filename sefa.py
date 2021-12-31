@@ -12,7 +12,7 @@ import os
 prefix = 'python editor.py --obj cat --scalar 15 --ckpt /root/jittor/gansketching_reproducing/weights/photosketch_standing_cat_noaug.pth --slice 3 --layers '
 layers = ['1,4']
 next = ' --comp_id '
-comp_id = 3
+comp_id = 4
 samples = range(50)
 next2 = ' --save_dir output/test'
 for i in samples:
