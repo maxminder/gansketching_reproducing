@@ -52,9 +52,12 @@ if (__name__ == '__main__'):
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
-        #checkpoint = torch.load(args.ckpt, map_location='cpu')
-        checkpoint = jt.load(args.ckpt)
-        netG.load_parameters(checkpoint)
+        import pickle
+        with open(args.ckpt, 'rb') as f:
+            obj = f.read()
+        weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
+
+        netG.load_state_dict(weights)
         if (args.truncation < 1):
             mean_latent = netG.mean_latent(args.truncation_mean)
         else:
