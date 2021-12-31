@@ -1,6 +1,5 @@
 import os
 import jittor as jt
-import time
 
 jt.flags.use_cuda=jt.has_cuda
 
@@ -134,6 +133,8 @@ class UpFirDn2d(jt.Function):
 
 
 def upfirdn2d(input, kernel, up=1, down=1, pad=(0, 0)):
+    print(input.shape)
+    print(kernel.shape)
     if jt.has_cuda:  # cuda版本
         if jt.flags.use_cuda == 0:
             jt.flags.use_cuda = 1
