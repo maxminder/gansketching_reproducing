@@ -4,8 +4,8 @@ from jittor.models import resnet50
 from upfirdn2d import upfirdn2d
 jt.flags.use_cuda = jt.has_cuda
 
-warmup = 1000
-rerun = 10000
+warmup = 100000
+rerun = 1000000
 batch_size = 50
 data = jt.random((batch_size, 3, 256, 256))
 kernel = jt.random((4, 4))
@@ -28,4 +28,5 @@ for i in range(rerun):
 jt.sync_all(True)
 end = time.time()
 
+print(end-start)
 print("Jittor upfirdn2d cuda FPS:", (rerun * batch_size) / (end - start))
