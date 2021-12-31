@@ -40,7 +40,7 @@ if (__name__ == '__main__'):
     parser.add_argument('--truncation_mean', type=int, default=4096, help='number of samples to calculate the mean latent for truncation')
     parser.add_argument('--seed', type=int, default=None, help='if specified, use a fixed random seed')
     parser.add_argument('--device', type=str, default='cuda')
-    parser.add_argument('--slice', type=float, default=0.5, help='the value s changes per')
+    parser.add_argument('--slice', type=float, default=0.5, help='the value s changes')
     args = parser.parse_args()
     device = args.device
     with jt.no_grad():
@@ -52,12 +52,15 @@ if (__name__ == '__main__'):
         if (not os.path.exists(args.save_dir)):
             os.makedirs(args.save_dir)
         netG = Generator(args.size, 512, 8)
-        import pickle
-        with open(args.ckpt, 'rb') as f:
-            obj = f.read()
-        weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
+        #checkpoint = torch.load(args.ckpt, map_location='cpu')
+        checkpoint = jt.load(args.ckpt)
+        netG.load_parameters(checkpoint)
+        # import pickle
+        # with open(args.ckpt, 'rb') as f:
+        #     obj = f.read()
+        # weights = {key: weight_dict for key, weight_dict in pickle.loads(obj, encoding='latin1').items()}
 
-        netG.load_state_dict(weights)
+        # netG.load_state_dict(weights)
         if (args.truncation < 1):
             mean_latent = netG.mean_latent(args.truncation_mean)
         else:
