@@ -1,5 +1,5 @@
 import os
-prefix = 'python editor.py --obj cat --scalar 15 --ckpt checkpoint/standing_cat_noaugment/75000_net_G.pth --slice 3 --layers '
+prefix = 'python editor.py --obj cat --scalar 15 --ckpt /root/lcs/new/gansketching_reproducing/checkpoint/standing_cat_noaugment/75000_net_G.pth --slice 3 --layers '
 layers = ['1,4','5,9','10,18']
 next = ' --comp_id '
 comp_id = range(50)
