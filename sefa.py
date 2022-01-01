@@ -10,10 +10,10 @@
 #         os.system(command)
 import os
 prefix = 'python editor.py --obj cat --scalar 15 --ckpt /root/jittor/gansketching_reproducing/weights/photosketch_standing_cat_noaug.pth --slice 3 --layers '
-layers = ['10,18']
-next = ' --comp_id '
+layers = ['5,8']
+next = ' --eigen_id '
 comp_id = 0
-samples = range(50)
+samples = range(4)
 next2 = ' --save_dir output/test'
 for i in samples:
     for layer in layers:

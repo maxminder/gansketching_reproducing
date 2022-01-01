@@ -28,7 +28,7 @@ def save_ims(prefix, ims):
 if (__name__ == '__main__'):
     parser = argparse.ArgumentParser()
     parser.add_argument('--obj', type=str, choices=['cat', 'horse', 'church'], help='which StyleGAN2 class to use')
-    parser.add_argument('--comp_id', type=int, required=True, help='which principle component to use')
+    parser.add_argument('--eigen_id', type=int, required=True, help='which eigenvector to use')
     parser.add_argument('--scalar', type=float, required=True, help='strength applied to the latent shift, value can be negative')
     parser.add_argument('--layers', type=str, required=True, help='layers to apply GANSpace (e.g., 3,5 means layer 3 to 5')
     parser.add_argument('--save_dir', type=str, default='./output', help='place to save the output')
@@ -65,13 +65,13 @@ if (__name__ == '__main__'):
             mean_latent = netG.mean_latent(args.truncation_mean)
         else:
             mean_latent = None
-        (k, s) = (args.comp_id, args.scalar)
+        (k, s) = (args.eigen_id, args.scalar)
         (l_start, l_end) = [int(d) for d in args.layers.split(',')]
         layers = range(l_start, (l_end + 1))
         if (args.fixed_z is None):
             z = jt.randn(args.samples, 512)
         else:
-            z = jt.load(args.fixed_z, map_location='cpu')
+            z = jt.load(args.fixed_z)
         latents = netG.get_latent(z)
         slice = args.slice
         num = int(s/slice)
