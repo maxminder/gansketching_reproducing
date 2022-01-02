@@ -194,7 +194,7 @@ Due to the differences between Pytorch and Jittor, we met many problems when tra
 
   Jittor doesn't provide a function for calculating variance of data  `var(x)`. Also, transforming `Jittor.var` to  `numpy.array`  may break the gradient. Therefore, we implement out own variance calculation in <*line 680-685*> in `stylegan2.py`.
 
-- **ConvTranspose2D (group>1) **
+- **ConvTranspose2D (group>1)**
 
   ConvTranspose2D function in Jittor only support convolution with argument  `group = 1`.  We provide a simple implementation in <*line 229-241*> in `stylegan2.py`.
 
