@@ -1,6 +1,7 @@
 ## Sketch Your Own GAN（Jittor）
 
-The GANSketching model takes one or a few sketches as input, and outputs a customized model by modifiying weights on the basis of a pretrained StyleGAN. The output GAN network can generate pictures with shape and pose that match the input sketches while preserving other characters including texture and background.![WechatIMG1063](/Users/lys/Desktop/WechatIMG1063.jpeg)
+The GANSketching model takes one or a few sketches as input, and outputs a customized model by modifiying weights on the basis of a pretrained StyleGAN. The output GAN network can generate pictures with shape and pose that match the input sketches while preserving other characters including texture and background.
+<img src="images/model.jpeg" width="800px"/>
 
 Also, we did some extra experiments on photo editing. In addition to implementing the ganspace PCA analysis proposed by the original work, we explored another editing method called SEFA. With photo editing, we can change specific characters of the generating process, for example, we can tilt a cat's head or  paint a black horse white.
 
