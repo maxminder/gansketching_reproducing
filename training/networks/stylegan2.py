@@ -2,6 +2,7 @@ import math
 import random
 import numpy as np
 import jittor as jt
+import numpy as np
 
 from .op import FusedLeakyReLU, fused_leaky_relu, upfirdn2d
 
@@ -302,7 +303,7 @@ class WShift(jt.nn.Module):
         super().__init__()
         self.w_shift = jt.zeros(1, style_dim)
 
-    def exxecute(self, input):
+    def execute(self, input):
         out = input + self.w_shift
         return out
 
@@ -473,6 +474,16 @@ class Generator(jt.nn.Module):
 
     def get_latent(self, input):
         return self.style(input)
+    
+    def style_weights(self):
+        weights = []
+        weights.append(np.array(self.conv1.conv.modulation.weight*self.conv1.conv.modulation.scale).T)
+        for styleconv in self.convs:
+            weights.append(np.array(styleconv.conv.modulation.weight*styleconv.conv.modulation.scale).T)
+        weight = np.concatenate(weights, axis=1).astype(np.float32)
+        weight = weight / np.linalg.norm(weight, axis=0, keepdims=True)
+        eigen_values, eigen_vectors = np.linalg.eig(weight.dot(weight.T))
+        return eigen_vectors.T
 
     def execute(
         self,
